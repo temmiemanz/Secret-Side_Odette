@@ -10,34 +10,37 @@
   --font-display: 'Quicksand', sans-serif;
   --font-body: 'Nunito', sans-serif;
 
-  --bg:        #e8f4fd;
-  --bg-card:   #ffffff;
-  --bg-tint:   #f0f8ff;
+  /* Opera GX Force dark palette */
+  --bg:         #0f0f13;
+  --bg-mid:     #16161d;
+  --bg-card:    #1c1c26;
+  --bg-tint:    #21212e;
+  --bg-inset:   #191920;
 
-  --rain-1: #4fc3f7;
-  --rain-2: #29b6f6;
-  --rain-3: #0288d1;
+  --border:     rgba(100,200,255,0.10);
+  --border2:    rgba(100,200,255,0.18);
+  --border-hot: rgba(100,200,255,0.32);
 
-  --coral:  #ff8a80;
-  --mint:   #69f0ae;
-  --gold:   #ffd54f;
-  --lilac:  #ce93d8;
-  --peach:  #ffab91;
+  /* neon rain/water accents */
+  --cyan:   #00d4ff;
+  --cyan2:  #00aadd;
+  --cyan3:  #007aaa;
 
-  --border: rgba(41,182,246,0.18);
-  --border2: rgba(41,182,246,0.35);
+  /* pop accents — colorful like her clothes */
+  --coral:  #ff6b8a;
+  --mint:   #00e5a0;
+  --gold:   #ffc947;
+  --lilac:  #b388ff;
+  --peach:  #ff9a6c;
 
-  --text:     #1a3a4a;
-  --text-mid: #3a6070;
-  --text-dim: #7aacbe;
+  --text:     #e8f4ff;
+  --text-mid: #8ab0c8;
+  --text-dim: #445a70;
 
   --sheet-width: 640px;
   --pad: clamp(1.1rem, 4vw, 1.6rem);
-  --radius: 18px;
-  --radius-sm: 10px;
-
-  color-scheme: dark;
-
+  --radius: 14px;
+  --radius-sm: 9px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -45,8 +48,8 @@
 body {
   background: var(--bg);
   background-image:
-    radial-gradient(circle at 20% 20%, rgba(79,195,247,.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(206,147,216,.12) 0%, transparent 50%);
+    radial-gradient(ellipse 60% 40% at 15% 10%, rgba(0,212,255,.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 85%, rgba(179,136,255,.06) 0%, transparent 60%);
   font-family: var(--font-body);
   min-height: 100vh;
   display: flex;
@@ -55,27 +58,32 @@ body {
   padding: clamp(1rem, 4vw, 2.5rem) clamp(.75rem, 3vw, 1rem);
 }
 
-/* animated raindrops background */
+/* animated rain — neon streaks */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background-image:
-    radial-gradient(ellipse 2px 6px at 10% 0%, rgba(41,182,246,.25) 100%, transparent 100%),
-    radial-gradient(ellipse 1.5px 5px at 25% 0%, rgba(79,195,247,.2) 100%, transparent 100%),
-    radial-gradient(ellipse 2px 7px at 40% 0%, rgba(41,182,246,.18) 100%, transparent 100%),
-    radial-gradient(ellipse 1.5px 5px at 55% 0%, rgba(79,195,247,.22) 100%, transparent 100%),
-    radial-gradient(ellipse 2px 6px at 70% 0%, rgba(41,182,246,.2) 100%, transparent 100%),
-    radial-gradient(ellipse 1.5px 5px at 85% 0%, rgba(79,195,247,.18) 100%, transparent 100%),
-    radial-gradient(ellipse 2px 7px at 95% 0%, rgba(41,182,246,.15) 100%, transparent 100%);
-  background-size: 100% 80px;
-  animation: rain 1.8s linear infinite;
+    linear-gradient(180deg, rgba(0,212,255,.18) 0%, transparent 100%),
+    linear-gradient(180deg, rgba(0,212,255,.14) 0%, transparent 100%),
+    linear-gradient(180deg, rgba(0,170,221,.12) 0%, transparent 100%),
+    linear-gradient(180deg, rgba(0,212,255,.10) 0%, transparent 100%),
+    linear-gradient(180deg, rgba(0,170,221,.16) 0%, transparent 100%),
+    linear-gradient(180deg, rgba(0,212,255,.10) 0%, transparent 100%),
+    linear-gradient(180deg, rgba(0,170,221,.14) 0%, transparent 100%);
+  background-size:
+    1px 60px, 1px 45px, 1px 70px, 1px 50px, 1px 65px, 1px 40px, 1px 55px;
+  background-position:
+    8% 0, 22% 0, 37% 0, 52% 0, 67% 0, 80% 0, 93% 0;
+  background-repeat: repeat-y;
+  animation: rain 1.6s linear infinite;
   pointer-events: none;
   z-index: 0;
+  opacity: .6;
 }
 @keyframes rain {
-  from { background-position-y: -80px; }
-  to   { background-position-y: 80px; }
+  from { background-position: 8% -80px, 22% -45px, 37% -70px, 52% -50px, 67% -65px, 80% -40px, 93% -55px; }
+  to   { background-position: 8% 100vh, 22% 100vh, 37% 100vh, 52% 100vh, 67% 100vh, 80% 100vh, 93% 100vh; }
 }
 
 .sheet {
@@ -85,66 +93,65 @@ body::before {
   max-width: var(--sheet-width);
   display: flex;
   flex-direction: column;
-  gap: .75rem;
+  gap: .65rem;
 }
 
-/* ── Card base ── */
-.card {
+/* ── scanline overlay on cards ── */
+.card, .header-card {
   background: var(--bg-card);
   border-radius: var(--radius);
-  border: 1.5px solid var(--border2);
+  border: 1px solid var(--border2);
   padding: clamp(1rem, 3vw, 1.35rem) var(--pad);
   position: relative;
   overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(0,212,255,.04),
+    inset 0 1px 0 rgba(0,212,255,.06);
 }
 .card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--rain-1), var(--lilac), var(--coral), var(--mint), var(--gold), var(--rain-2));
-  border-radius: var(--radius) var(--radius) 0 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    var(--cyan), var(--lilac), var(--coral),
+    var(--mint), var(--gold), var(--peach), var(--cyan));
+  opacity: .85;
 }
 
 .sec-label {
   font-family: var(--font-display);
-  font-size: clamp(.6rem, 1.8vw, .68rem);
+  font-size: clamp(.58rem, 1.6vw, .64rem);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .14em;
+  letter-spacing: .16em;
   color: var(--text-dim);
-  margin-bottom: clamp(.7rem, 2vw, 1rem);
+  margin-bottom: clamp(.65rem, 2vw, .95rem);
 }
 
-/* ── Header card ── */
+/* ── Header ── */
 .header-card {
-  background: linear-gradient(135deg, #e3f5ff 0%, #f5eeff 50%, #fff5f0 100%);
-  border: 1.5px solid var(--border2);
-  border-radius: var(--radius);
-  padding: clamp(1.1rem, 3vw, 1.5rem) var(--pad);
-  position: relative;
-  overflow: hidden;
+  background: linear-gradient(135deg, #181824 0%, #1a1828 50%, #1c1820 100%);
+  border-color: var(--border-hot);
+  box-shadow:
+    0 0 0 1px rgba(0,212,255,.06),
+    0 0 30px rgba(0,212,255,.05),
+    inset 0 1px 0 rgba(0,212,255,.1);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
 }
 .header-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--rain-1), var(--lilac), var(--coral), var(--mint), var(--gold), var(--rain-2));
-  border-radius: var(--radius) var(--radius) 0 0;
+  height: 3px;
+  opacity: 1;
 }
-
-/* water blob decoration */
 .header-card::after {
   content: '';
   position: absolute;
-  right: -30px; bottom: -30px;
-  width: 130px; height: 130px;
-  background: radial-gradient(circle, rgba(79,195,247,.12) 0%, transparent 70%);
+  right: -20px; bottom: -20px;
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(0,212,255,.07) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -156,6 +163,7 @@ body::before {
   color: var(--text);
   letter-spacing: -.01em;
   line-height: 1;
+  text-shadow: 0 0 20px rgba(0,212,255,.25);
 }
 .char-meta {
   font-family: var(--font-body);
@@ -166,43 +174,55 @@ body::before {
 }
 .char-meta + .char-meta { margin-top: .1rem; }
 .char-meta.small {
-  font-size: clamp(.6rem, 1.8vw, .66rem);
+  font-size: clamp(.58rem, 1.7vw, .64rem);
   color: var(--text-dim);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .07em;
+  letter-spacing: .08em;
 }
-
-.badge {
-  text-align: right;
-  flex-shrink: 0;
-}
+.badge { text-align: right; flex-shrink: 0; }
 .badge-label {
   font-family: var(--font-display);
-  font-size: clamp(.56rem, 1.6vw, .62rem);
+  font-size: clamp(.54rem, 1.5vw, .6rem);
   font-weight: 700;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: .1em;
+  letter-spacing: .12em;
 }
 .badge-value {
   font-family: var(--font-display);
   font-size: clamp(1.8rem, 6vw, 2.5rem);
   font-weight: 700;
-  color: var(--rain-2);
+  color: var(--cyan);
   line-height: 1;
   margin-top: .1rem;
+  text-shadow: 0 0 16px rgba(0,212,255,.5);
+}
+
+/* ── Bubbles ── */
+.bubbles {
+  position: absolute;
+  pointer-events: none;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0,212,255,.15);
+  background: rgba(0,212,255,.03);
 }
 
 /* ── Rolls ── */
 .rolls-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: clamp(.5rem, 2vw, .75rem);
+  gap: clamp(.5rem, 2vw, .65rem);
 }
 .roll-card {
   background: var(--bg-tint);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: .7rem .9rem;
   display: flex;
@@ -210,25 +230,26 @@ body::before {
   gap: .2rem;
   position: relative;
   overflow: hidden;
+  transition: border-color .2s;
 }
+.roll-card:hover { border-color: var(--border-hot); }
 .roll-card::after {
   content: '';
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 2.5px;
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  height: 2px;
 }
-.roll-card:nth-child(1)::after { background: var(--coral); }
-.roll-card:nth-child(2)::after { background: var(--lilac); }
-.roll-card:nth-child(3)::after { background: var(--mint); }
+.roll-card:nth-child(1)::after { background: var(--coral); box-shadow: 0 0 6px var(--coral); }
+.roll-card:nth-child(2)::after { background: var(--lilac); box-shadow: 0 0 6px var(--lilac); }
+.roll-card:nth-child(3)::after { background: var(--mint);  box-shadow: 0 0 6px var(--mint); }
 
 .roll-abbr {
   font-family: var(--font-display);
-  font-size: clamp(.56rem, 1.6vw, .62rem);
+  font-size: clamp(.54rem, 1.5vw, .6rem);
   font-weight: 700;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: .1em;
+  letter-spacing: .12em;
 }
 .roll-mod {
   font-family: var(--font-display);
@@ -237,23 +258,22 @@ body::before {
   color: var(--text);
 }
 .roll-note {
-  font-size: clamp(.6rem, 1.7vw, .67rem);
+  font-size: clamp(.58rem, 1.6vw, .65rem);
   color: var(--text-mid);
   line-height: 1.4;
-  font-weight: 400;
 }
 
 /* ── Abilities ── */
 .abilities-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: clamp(.65rem, 2.5vw, .875rem);
+  gap: clamp(.6rem, 2.2vw, .8rem);
 }
 .abilities-grid.single { grid-template-columns: 1fr; }
 
 .ability {
   background: var(--bg-tint);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: .85rem 1rem;
   display: flex;
@@ -261,20 +281,24 @@ body::before {
   gap: .4rem;
 }
 .ability.full { grid-column: 1 / -1; }
-
 .ability-header { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 
 .ability-tag {
   font-family: var(--font-display);
-  font-size: clamp(.5rem, 1.4vw, .55rem);
+  font-size: clamp(.48rem, 1.4vw, .53rem);
   font-weight: 700;
-  color: var(--bg-card);
-  background: var(--rain-2);
-  padding: 2px 7px;
+  color: #0f0f13;
+  background: var(--cyan);
+  padding: 2px 8px;
   border-radius: 99px;
   text-transform: uppercase;
   letter-spacing: .08em;
   flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(0,212,255,.4);
+}
+.ability-tag.passive {
+  background: var(--lilac);
+  box-shadow: 0 0 8px rgba(179,136,255,.4);
 }
 
 .ability-name {
@@ -284,19 +308,19 @@ body::before {
   color: var(--text);
 }
 .ability-desc {
-  font-size: clamp(.65rem, 1.9vw, .72rem);
+  font-size: clamp(.63rem, 1.8vw, .7rem);
   color: var(--text-mid);
   line-height: 1.6;
 }
-
 .limits-label {
   font-family: var(--font-display);
-  font-size: clamp(.52rem, 1.5vw, .58rem);
+  font-size: clamp(.5rem, 1.4vw, .56rem);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .1em;
+  letter-spacing: .12em;
   color: var(--coral);
   margin-top: .25rem;
+  text-shadow: 0 0 8px rgba(255,107,138,.3);
 }
 .limit-item {
   display: flex;
@@ -310,10 +334,10 @@ body::before {
   background: var(--coral);
   margin-top: 4px;
   flex-shrink: 0;
-  opacity: .7;
+  box-shadow: 0 0 4px var(--coral);
 }
 .limit-text {
-  font-size: clamp(.62rem, 1.8vw, .68rem);
+  font-size: clamp(.6rem, 1.7vw, .66rem);
   color: var(--text-mid);
   line-height: 1.5;
 }
@@ -322,48 +346,38 @@ body::before {
 /* ── Lore ── */
 .lore-block { display: flex; flex-direction: column; gap: .65rem; }
 .lore-text {
-  font-size: clamp(.67rem, 2vw, .75rem);
+  font-size: clamp(.66rem, 1.9vw, .73rem);
   color: var(--text-mid);
   line-height: 1.75;
 }
 .lore-text + .lore-text {
   padding-top: .65rem;
-  border-top: 1.5px dashed rgba(41,182,246,.2);
+  border-top: 1px solid rgba(0,212,255,.08);
 }
-.lore-text em { color: var(--rain-3); font-style: italic; }
-
-/* ── Bubble decoration ── */
-.bubbles {
-  position: absolute;
-  pointer-events: none;
-  inset: 0;
-  overflow: hidden;
-  border-radius: var(--radius);
-}
-.bubble {
-  position: absolute;
-  border-radius: 50%;
-  border: 1.5px solid rgba(79,195,247,.25);
-  background: rgba(79,195,247,.06);
+.lore-text em {
+  color: var(--cyan);
+  font-style: italic;
+  text-shadow: 0 0 8px rgba(0,212,255,.3);
 }
 
 /* ── Footer ── */
 .footer {
   text-align: center;
   font-family: var(--font-display);
-  font-size: clamp(.55rem, 1.6vw, .62rem);
+  font-size: clamp(.52rem, 1.5vw, .6rem);
   font-weight: 600;
   color: var(--text-dim);
-  letter-spacing: .07em;
+  letter-spacing: .08em;
   padding: .5rem 0 .25rem;
 }
 .footer span {
   display: inline-block;
   width: 4px; height: 4px;
   border-radius: 50%;
-  background: var(--rain-1);
+  background: var(--cyan);
   vertical-align: middle;
   margin: 0 .4rem .1rem;
+  box-shadow: 0 0 5px var(--cyan);
 }
 
 @media (max-width: 480px) {
@@ -376,13 +390,12 @@ body::before {
 <body>
 <div class="sheet">
 
-  <!-- Header -->
   <div class="header-card">
     <div class="bubbles">
-      <div class="bubble" style="width:60px;height:60px;top:-15px;right:90px;"></div>
-      <div class="bubble" style="width:24px;height:24px;top:10px;right:60px;"></div>
-      <div class="bubble" style="width:14px;height:14px;bottom:12px;left:40px;"></div>
-      <div class="bubble" style="width:40px;height:40px;bottom:-10px;left:120px;"></div>
+      <div class="bubble" style="width:70px;height:70px;top:-20px;right:100px;"></div>
+      <div class="bubble" style="width:28px;height:28px;top:12px;right:65px;"></div>
+      <div class="bubble" style="width:16px;height:16px;bottom:14px;left:45px;"></div>
+      <div class="bubble" style="width:44px;height:44px;bottom:-14px;left:130px;"></div>
     </div>
     <div>
       <div class="char-name">Odette</div>
@@ -395,11 +408,10 @@ body::before {
     </div>
   </div>
 
-  <!-- Rolls -->
   <div class="card">
     <div class="bubbles">
-      <div class="bubble" style="width:30px;height:30px;top:-8px;right:20px;"></div>
-      <div class="bubble" style="width:16px;height:16px;bottom:8px;right:60px;"></div>
+      <div class="bubble" style="width:32px;height:32px;top:-10px;right:24px;"></div>
+      <div class="bubble" style="width:18px;height:18px;bottom:10px;right:65px;"></div>
     </div>
     <div class="sec-label">Rolls</div>
     <div class="rolls-grid">
@@ -421,11 +433,10 @@ body::before {
     </div>
   </div>
 
-  <!-- Abilities -->
   <div class="card">
     <div class="bubbles">
-      <div class="bubble" style="width:22px;height:22px;top:8px;right:30px;"></div>
-      <div class="bubble" style="width:40px;height:40px;bottom:-12px;right:80px;"></div>
+      <div class="bubble" style="width:24px;height:24px;top:10px;right:32px;"></div>
+      <div class="bubble" style="width:44px;height:44px;bottom:-14px;right:85px;"></div>
     </div>
     <div class="sec-label">Abilities</div>
     <div class="abilities-grid">
@@ -449,7 +460,7 @@ body::before {
 
       <div class="ability">
         <div class="ability-header">
-          <span class="ability-tag">passive</span>
+          <span class="ability-tag passive">passive</span>
           <span class="ability-name">Weather Draw</span>
         </div>
         <div class="ability-desc">Passively pulls light moisture from the air around her at all times.</div>
@@ -463,12 +474,11 @@ body::before {
     </div>
   </div>
 
-  <!-- Lore -->
   <div class="card">
     <div class="bubbles">
-      <div class="bubble" style="width:50px;height:50px;top:-10px;right:30px;"></div>
-      <div class="bubble" style="width:18px;height:18px;top:20px;right:10px;"></div>
-      <div class="bubble" style="width:26px;height:26px;bottom:10px;left:20px;"></div>
+      <div class="bubble" style="width:55px;height:55px;top:-12px;right:35px;"></div>
+      <div class="bubble" style="width:20px;height:20px;top:22px;right:12px;"></div>
+      <div class="bubble" style="width:28px;height:28px;bottom:12px;left:22px;"></div>
     </div>
     <div class="sec-label">Lore</div>
     <div class="lore-block">
