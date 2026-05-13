@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odette — Character Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;1,400&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font-display: 'Quicksand', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+
+  --bg:        #e8f4fd;
+  --bg-card:   #ffffff;
+  --bg-tint:   #f0f8ff;
+
+  --rain-1: #4fc3f7;
+  --rain-2: #29b6f6;
+  --rain-3: #0288d1;
+
+  --coral:  #ff8a80;
+  --mint:   #69f0ae;
+  --gold:   #ffd54f;
+  --lilac:  #ce93d8;
+  --peach:  #ffab91;
+
+  --border: rgba(41,182,246,0.18);
+  --border2: rgba(41,182,246,0.35);
+
+  --text:     #1a3a4a;
+  --text-mid: #3a6070;
+  --text-dim: #7aacbe;
+
+  --sheet-width: 640px;
+  --pad: clamp(1.1rem, 4vw, 1.6rem);
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(79,195,247,.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(206,147,216,.12) 0%, transparent 50%);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 2.5rem) clamp(.75rem, 3vw, 1rem);
+}
+
+/* animated raindrops background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 2px 6px at 10% 0%, rgba(41,182,246,.25) 100%, transparent 100%),
+    radial-gradient(ellipse 1.5px 5px at 25% 0%, rgba(79,195,247,.2) 100%, transparent 100%),
+    radial-gradient(ellipse 2px 7px at 40% 0%, rgba(41,182,246,.18) 100%, transparent 100%),
+    radial-gradient(ellipse 1.5px 5px at 55% 0%, rgba(79,195,247,.22) 100%, transparent 100%),
+    radial-gradient(ellipse 2px 6px at 70% 0%, rgba(41,182,246,.2) 100%, transparent 100%),
+    radial-gradient(ellipse 1.5px 5px at 85% 0%, rgba(79,195,247,.18) 100%, transparent 100%),
+    radial-gradient(ellipse 2px 7px at 95% 0%, rgba(41,182,246,.15) 100%, transparent 100%);
+  background-size: 100% 80px;
+  animation: rain 1.8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes rain {
+  from { background-position-y: -80px; }
+  to   { background-position-y: 80px; }
+}
+
+.sheet {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--sheet-width);
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+/* ── Card base ── */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border2);
+  padding: clamp(1rem, 3vw, 1.35rem) var(--pad);
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rain-1), var(--lilac), var(--coral), var(--mint), var(--gold), var(--rain-2));
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.sec-label {
+  font-family: var(--font-display);
+  font-size: clamp(.6rem, 1.8vw, .68rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  margin-bottom: clamp(.7rem, 2vw, 1rem);
+}
+
+/* ── Header card ── */
+.header-card {
+  background: linear-gradient(135deg, #e3f5ff 0%, #f5eeff 50%, #fff5f0 100%);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius);
+  padding: clamp(1.1rem, 3vw, 1.5rem) var(--pad);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.header-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--rain-1), var(--lilac), var(--coral), var(--mint), var(--gold), var(--rain-2));
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* water blob decoration */
+.header-card::after {
+  content: '';
+  position: absolute;
+  right: -30px; bottom: -30px;
+  width: 130px; height: 130px;
+  background: radial-gradient(circle, rgba(79,195,247,.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.char-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.01em;
+  line-height: 1;
+}
+.char-meta {
+  font-family: var(--font-body);
+  font-size: clamp(.68rem, 2vw, .76rem);
+  color: var(--text-mid);
+  margin-top: .3rem;
+  font-weight: 600;
+}
+.char-meta + .char-meta { margin-top: .1rem; }
+.char-meta.small {
+  font-size: clamp(.6rem, 1.8vw, .66rem);
+  color: var(--text-dim);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.badge {
+  text-align: right;
+  flex-shrink: 0;
+}
+.badge-label {
+  font-family: var(--font-display);
+  font-size: clamp(.56rem, 1.6vw, .62rem);
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.badge-value {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 6vw, 2.5rem);
+  font-weight: 700;
+  color: var(--rain-2);
+  line-height: 1;
+  margin-top: .1rem;
+}
+
+/* ── Rolls ── */
+.rolls-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(.5rem, 2vw, .75rem);
+}
+.roll-card {
+  background: var(--bg-tint);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .7rem .9rem;
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  position: relative;
+  overflow: hidden;
+}
+.roll-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2.5px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+.roll-card:nth-child(1)::after { background: var(--coral); }
+.roll-card:nth-child(2)::after { background: var(--lilac); }
+.roll-card:nth-child(3)::after { background: var(--mint); }
+
+.roll-abbr {
+  font-family: var(--font-display);
+  font-size: clamp(.56rem, 1.6vw, .62rem);
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.roll-mod {
+  font-family: var(--font-display);
+  font-size: clamp(.9rem, 2.8vw, 1.1rem);
+  font-weight: 700;
+  color: var(--text);
+}
+.roll-note {
+  font-size: clamp(.6rem, 1.7vw, .67rem);
+  color: var(--text-mid);
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* ── Abilities ── */
+.abilities-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(.65rem, 2.5vw, .875rem);
+}
+.abilities-grid.single { grid-template-columns: 1fr; }
+
+.ability {
+  background: var(--bg-tint);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+.ability.full { grid-column: 1 / -1; }
+
+.ability-header { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+.ability-tag {
+  font-family: var(--font-display);
+  font-size: clamp(.5rem, 1.4vw, .55rem);
+  font-weight: 700;
+  color: var(--bg-card);
+  background: var(--rain-2);
+  padding: 2px 7px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  flex-shrink: 0;
+}
+
+.ability-name {
+  font-family: var(--font-display);
+  font-size: clamp(.8rem, 2.4vw, .9rem);
+  font-weight: 700;
+  color: var(--text);
+}
+.ability-desc {
+  font-size: clamp(.65rem, 1.9vw, .72rem);
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+
+.limits-label {
+  font-family: var(--font-display);
+  font-size: clamp(.52rem, 1.5vw, .58rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--coral);
+  margin-top: .25rem;
+}
+.limit-item {
+  display: flex;
+  gap: .4rem;
+  align-items: flex-start;
+  margin-top: .28rem;
+}
+.limit-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--coral);
+  margin-top: 4px;
+  flex-shrink: 0;
+  opacity: .7;
+}
+.limit-text {
+  font-size: clamp(.62rem, 1.8vw, .68rem);
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+.limit-text b { color: var(--text); font-weight: 700; }
+
+/* ── Lore ── */
+.lore-block { display: flex; flex-direction: column; gap: .65rem; }
+.lore-text {
+  font-size: clamp(.67rem, 2vw, .75rem);
+  color: var(--text-mid);
+  line-height: 1.75;
+}
+.lore-text + .lore-text {
+  padding-top: .65rem;
+  border-top: 1.5px dashed rgba(41,182,246,.2);
+}
+.lore-text em { color: var(--rain-3); font-style: italic; }
+
+/* ── Bubble decoration ── */
+.bubbles {
+  position: absolute;
+  pointer-events: none;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(79,195,247,.25);
+  background: rgba(79,195,247,.06);
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(.55rem, 1.6vw, .62rem);
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: .07em;
+  padding: .5rem 0 .25rem;
+}
+.footer span {
+  display: inline-block;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--rain-1);
+  vertical-align: middle;
+  margin: 0 .4rem .1rem;
+}
+
+@media (max-width: 480px) {
+  .rolls-grid { grid-template-columns: 1fr 1fr; }
+  .abilities-grid { grid-template-columns: 1fr; }
+  .ability.full { grid-column: 1; }
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <!-- Header -->
+  <div class="header-card">
+    <div class="bubbles">
+      <div class="bubble" style="width:60px;height:60px;top:-15px;right:90px;"></div>
+      <div class="bubble" style="width:24px;height:24px;top:10px;right:60px;"></div>
+      <div class="bubble" style="width:14px;height:14px;bottom:12px;left:40px;"></div>
+      <div class="bubble" style="width:40px;height:40px;bottom:-10px;left:120px;"></div>
+    </div>
+    <div>
+      <div class="char-name">Odette</div>
+      <div class="char-meta">Player: Josslyn</div>
+      <div class="char-meta small">Conjuration EVO — Rainfall</div>
+    </div>
+    <div class="badge">
+      <div class="badge-label">Level</div>
+      <div class="badge-value">01</div>
+    </div>
+  </div>
+
+  <!-- Rolls -->
+  <div class="card">
+    <div class="bubbles">
+      <div class="bubble" style="width:30px;height:30px;top:-8px;right:20px;"></div>
+      <div class="bubble" style="width:16px;height:16px;bottom:8px;right:60px;"></div>
+    </div>
+    <div class="sec-label">Rolls</div>
+    <div class="rolls-grid">
+      <div class="roll-card">
+        <div class="roll-abbr">STR</div>
+        <div class="roll-mod">d20 + 1</div>
+        <div class="roll-note">physical attacks and actions</div>
+      </div>
+      <div class="roll-card">
+        <div class="roll-abbr">MND</div>
+        <div class="roll-mod">d20 + 3</div>
+        <div class="roll-note">intellectual and mental actions</div>
+      </div>
+      <div class="roll-card">
+        <div class="roll-abbr">SOL</div>
+        <div class="roll-mod">d20 + 2</div>
+        <div class="roll-note">belief, instinct, willpower</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Abilities -->
+  <div class="card">
+    <div class="bubbles">
+      <div class="bubble" style="width:22px;height:22px;top:8px;right:30px;"></div>
+      <div class="bubble" style="width:40px;height:40px;bottom:-12px;right:80px;"></div>
+    </div>
+    <div class="sec-label">Abilities</div>
+    <div class="abilities-grid">
+
+      <div class="ability">
+        <div class="ability-header">
+          <span class="ability-tag">active</span>
+          <span class="ability-name">Water Control</span>
+        </div>
+        <div class="ability-desc">Can treat water as a solid — shaping and holding it in place completely at will.</div>
+        <div class="limits-label">Limits</div>
+        <div class="limit-item">
+          <div class="limit-dot"></div>
+          <div class="limit-text">Move it too fast and it loses form and drops.</div>
+        </div>
+        <div class="limit-item">
+          <div class="limit-dot"></div>
+          <div class="limit-text">Anything beyond a few gallons gets unstable.</div>
+        </div>
+      </div>
+
+      <div class="ability">
+        <div class="ability-header">
+          <span class="ability-tag">passive</span>
+          <span class="ability-name">Weather Draw</span>
+        </div>
+        <div class="ability-desc">Passively pulls light moisture from the air around her at all times.</div>
+        <div class="limits-label">Limits</div>
+        <div class="limit-item">
+          <div class="limit-dot"></div>
+          <div class="limit-text">Cannot create water — only interact with what's already present.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Lore -->
+  <div class="card">
+    <div class="bubbles">
+      <div class="bubble" style="width:50px;height:50px;top:-10px;right:30px;"></div>
+      <div class="bubble" style="width:18px;height:18px;top:20px;right:10px;"></div>
+      <div class="bubble" style="width:26px;height:26px;bottom:10px;left:20px;"></div>
+    </div>
+    <div class="sec-label">Lore</div>
+    <div class="lore-block">
+      <div class="lore-text">Odette was never found — she was delivered, or so she was told. Abandoned as a baby, the cult took her in and decided immediately that God had sent her to them. Her ability made the story easy to sell. She was raised quiet and obedient, trained to serve, and eventually made their <em>priestess</em>. She has killed people in that role. More than she can make peace with.</div>
+      <div class="lore-text">The cult wears black to mourn the world they believe is dying. Their highest honor is death — a public ritual killing that means you've earned heaven. The leaders haven't died yet because they claim it's their sacred duty to send others first. Odette believed all of it. Then she started pulling on threads.</div>
+      <div class="lore-text">What she found was that her mother had tried to leave when Odette was born — and they killed her for it. The story of the abandoned baby was a cover. The whole system was a lie built to keep people compliant and the powerful comfortable. She ran. She tells herself she was a coward for not exposing it. She's probably right, and she knows it.</div>
+      <div class="lore-text">Now she dresses in as much color as she can find — a deliberate contrast to the black she wore her whole life, and a practical disguise. She is relentlessly optimistic in a way that reads almost wrong given everything, but it comes from fear: she has <em>no idea</em> what happens after death, and that terrifies her more than anything the apocalypse can throw at her. Life feels like a gift because she doesn't know what comes next — and somewhere underneath that, she's still afraid she'll find out she was wrong to leave.</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    stats update on level up only
+    <span></span>
+    post-collapse 2004
+    <span></span>
+    conjuration evo
+  </div>
+
+</div>
+</body>
+</html>
