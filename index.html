@@ -7,389 +7,79 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;1,400&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --font-display: 'Quicksand', sans-serif;
-  --font-body: 'Nunito', sans-serif;
-
-  /* Opera GX Force dark palette */
-  --bg:         #0f0f13;
-  --bg-mid:     #16161d;
-  --bg-card:    #1c1c26;
-  --bg-tint:    #21212e;
-  --bg-inset:   #191920;
-
-  --border:     rgba(100,200,255,0.10);
-  --border2:    rgba(100,200,255,0.18);
-  --border-hot: rgba(100,200,255,0.32);
-
-  /* neon rain/water accents */
-  --cyan:   #00d4ff;
-  --cyan2:  #00aadd;
-  --cyan3:  #007aaa;
-
-  /* pop accents — colorful like her clothes */
-  --coral:  #ff6b8a;
-  --mint:   #00e5a0;
-  --gold:   #ffc947;
-  --lilac:  #b388ff;
-  --peach:  #ff9a6c;
-
-  --text:     #e8f4ff;
-  --text-mid: #8ab0c8;
-  --text-dim: #445a70;
-
-  --sheet-width: 640px;
-  --pad: clamp(1.1rem, 4vw, 1.6rem);
-  --radius: 14px;
-  --radius-sm: 9px;
+  --font-display:'Quicksand',sans-serif;
+  --font-body:'Nunito',sans-serif;
+  --bg:#0f0f13;--bg-card:#1c1c26;--bg-tint:#21212e;--bg-inset:#191920;
+  --border:rgba(100,200,255,.10);--border2:rgba(100,200,255,.18);--border-hot:rgba(100,200,255,.32);
+  --cyan:#00d4ff;--cyan2:#00aadd;--cyan3:#007aaa;
+  --coral:#ff6b8a;--mint:#00e5a0;--gold:#ffc947;--lilac:#b388ff;--peach:#ff9a6c;
+  --text:#e8f4ff;--text-mid:#8ab0c8;--text-dim:#445a70;
+  --pad:clamp(1.1rem,4vw,1.6rem);--radius:14px;--radius-sm:9px;
 }
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg);
-  background-image:
-    radial-gradient(ellipse 60% 40% at 15% 10%, rgba(0,212,255,.07) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 85% 85%, rgba(179,136,255,.06) 0%, transparent 60%);
-  font-family: var(--font-body);
-  min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: clamp(1rem, 4vw, 2.5rem) clamp(.75rem, 3vw, 1rem);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(ellipse 60% 40% at 15% 10%,rgba(0,212,255,.07) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 85% 85%,rgba(179,136,255,.06) 0%,transparent 60%);
+  font-family:var(--font-body);min-height:100vh;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:0;overflow-x:hidden;position:relative;
 }
-
-/* animated rain — neon streaks */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(180deg, rgba(0,212,255,.18) 0%, transparent 100%),
-    linear-gradient(180deg, rgba(0,212,255,.14) 0%, transparent 100%),
-    linear-gradient(180deg, rgba(0,170,221,.12) 0%, transparent 100%),
-    linear-gradient(180deg, rgba(0,212,255,.10) 0%, transparent 100%),
-    linear-gradient(180deg, rgba(0,170,221,.16) 0%, transparent 100%),
-    linear-gradient(180deg, rgba(0,212,255,.10) 0%, transparent 100%),
-    linear-gradient(180deg, rgba(0,170,221,.14) 0%, transparent 100%);
-  background-size:
-    1px 60px, 1px 45px, 1px 70px, 1px 50px, 1px 65px, 1px 40px, 1px 55px;
-  background-position:
-    8% 0, 22% 0, 37% 0, 52% 0, 67% 0, 80% 0, 93% 0;
-  background-repeat: repeat-y;
-  animation: rain 1.6s linear infinite;
-  pointer-events: none;
-  z-index: 0;
-  opacity: .6;
-}
-@keyframes rain {
-  from { background-position: 8% -80px, 22% -45px, 37% -70px, 52% -50px, 67% -65px, 80% -40px, 93% -55px; }
-  to   { background-position: 8% 100vh, 22% 100vh, 37% 100vh, 52% 100vh, 67% 100vh, 80% 100vh, 93% 100vh; }
-}
-
-.sheet {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: var(--sheet-width);
-  display: flex;
-  flex-direction: column;
-  gap: .65rem;
-}
-
-/* ── scanline overlay on cards ── */
-.card, .header-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border2);
-  padding: clamp(1rem, 3vw, 1.35rem) var(--pad);
-  position: relative;
-  overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(0,212,255,.04),
-    inset 0 1px 0 rgba(0,212,255,.06);
-}
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg,
-    var(--cyan), var(--lilac), var(--coral),
-    var(--mint), var(--gold), var(--peach), var(--cyan));
-  opacity: .85;
-}
-
-.sec-label {
-  font-family: var(--font-display);
-  font-size: clamp(.58rem, 1.6vw, .64rem);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .16em;
-  color: var(--text-dim);
-  margin-bottom: clamp(.65rem, 2vw, .95rem);
-}
-
-/* ── Header ── */
-.header-card {
-  background: linear-gradient(135deg, #181824 0%, #1a1828 50%, #1c1820 100%);
-  border-color: var(--border-hot);
-  box-shadow:
-    0 0 0 1px rgba(0,212,255,.06),
-    0 0 30px rgba(0,212,255,.05),
-    inset 0 1px 0 rgba(0,212,255,.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-.header-card::before {
-  height: 3px;
-  opacity: 1;
-}
-.header-card::after {
-  content: '';
-  position: absolute;
-  right: -20px; bottom: -20px;
-  width: 140px; height: 140px;
-  background: radial-gradient(circle, rgba(0,212,255,.07) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.char-name {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 5vw, 2rem);
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -.01em;
-  line-height: 1;
-  text-shadow: 0 0 20px rgba(0,212,255,.25);
-}
-.char-meta {
-  font-family: var(--font-body);
-  font-size: clamp(.68rem, 2vw, .76rem);
-  color: var(--text-mid);
-  margin-top: .3rem;
-  font-weight: 600;
-}
-.char-meta + .char-meta { margin-top: .1rem; }
-.char-meta.small {
-  font-size: clamp(.58rem, 1.7vw, .64rem);
-  color: var(--text-dim);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-}
-.badge { text-align: right; flex-shrink: 0; }
-.badge-label {
-  font-family: var(--font-display);
-  font-size: clamp(.54rem, 1.5vw, .6rem);
-  font-weight: 700;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: .12em;
-}
-.badge-value {
-  font-family: var(--font-display);
-  font-size: clamp(1.8rem, 6vw, 2.5rem);
-  font-weight: 700;
-  color: var(--cyan);
-  line-height: 1;
-  margin-top: .1rem;
-  text-shadow: 0 0 16px rgba(0,212,255,.5);
-}
-
-/* ── Bubbles ── */
-.bubbles {
-  position: absolute;
-  pointer-events: none;
-  inset: 0;
-  overflow: hidden;
-  border-radius: var(--radius);
-}
-.bubble {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(0,212,255,.15);
-  background: rgba(0,212,255,.03);
-}
-
-/* ── Rolls ── */
-.rolls-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(.5rem, 2vw, .65rem);
-}
-.roll-card {
-  background: var(--bg-tint);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: .7rem .9rem;
-  display: flex;
-  flex-direction: column;
-  gap: .2rem;
-  position: relative;
-  overflow: hidden;
-  transition: border-color .2s;
-}
-.roll-card:hover { border-color: var(--border-hot); }
-.roll-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 2px;
-}
-.roll-card:nth-child(1)::after { background: var(--coral); box-shadow: 0 0 6px var(--coral); }
-.roll-card:nth-child(2)::after { background: var(--lilac); box-shadow: 0 0 6px var(--lilac); }
-.roll-card:nth-child(3)::after { background: var(--mint);  box-shadow: 0 0 6px var(--mint); }
-
-.roll-abbr {
-  font-family: var(--font-display);
-  font-size: clamp(.54rem, 1.5vw, .6rem);
-  font-weight: 700;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: .12em;
-}
-.roll-mod {
-  font-family: var(--font-display);
-  font-size: clamp(.9rem, 2.8vw, 1.1rem);
-  font-weight: 700;
-  color: var(--text);
-}
-.roll-note {
-  font-size: clamp(.58rem, 1.6vw, .65rem);
-  color: var(--text-mid);
-  line-height: 1.4;
-}
-
-/* ── Abilities ── */
-.abilities-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: clamp(.6rem, 2.2vw, .8rem);
-}
-.abilities-grid.single { grid-template-columns: 1fr; }
-
-.ability {
-  background: var(--bg-tint);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: .85rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: .4rem;
-}
-.ability.full { grid-column: 1 / -1; }
-.ability-header { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-
-.ability-tag {
-  font-family: var(--font-display);
-  font-size: clamp(.48rem, 1.4vw, .53rem);
-  font-weight: 700;
-  color: #0f0f13;
-  background: var(--cyan);
-  padding: 2px 8px;
-  border-radius: 99px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  flex-shrink: 0;
-  box-shadow: 0 0 8px rgba(0,212,255,.4);
-}
-.ability-tag.passive {
-  background: var(--lilac);
-  box-shadow: 0 0 8px rgba(179,136,255,.4);
-}
-
-.ability-name {
-  font-family: var(--font-display);
-  font-size: clamp(.8rem, 2.4vw, .9rem);
-  font-weight: 700;
-  color: var(--text);
-}
-.ability-desc {
-  font-size: clamp(.63rem, 1.8vw, .7rem);
-  color: var(--text-mid);
-  line-height: 1.6;
-}
-.limits-label {
-  font-family: var(--font-display);
-  font-size: clamp(.5rem, 1.4vw, .56rem);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .12em;
-  color: var(--coral);
-  margin-top: .25rem;
-  text-shadow: 0 0 8px rgba(255,107,138,.3);
-}
-.limit-item {
-  display: flex;
-  gap: .4rem;
-  align-items: flex-start;
-  margin-top: .28rem;
-}
-.limit-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--coral);
-  margin-top: 4px;
-  flex-shrink: 0;
-  box-shadow: 0 0 4px var(--coral);
-}
-.limit-text {
-  font-size: clamp(.6rem, 1.7vw, .66rem);
-  color: var(--text-mid);
-  line-height: 1.5;
-}
-.limit-text b { color: var(--text); font-weight: 700; }
-
-/* ── Lore ── */
-.lore-block { display: flex; flex-direction: column; gap: .65rem; }
-.lore-text {
-  font-size: clamp(.66rem, 1.9vw, .73rem);
-  color: var(--text-mid);
-  line-height: 1.75;
-}
-.lore-text + .lore-text {
-  padding-top: .65rem;
-  border-top: 1px solid rgba(0,212,255,.08);
-}
-.lore-text em {
-  color: var(--cyan);
-  font-style: italic;
-  text-shadow: 0 0 8px rgba(0,212,255,.3);
-}
-
-/* ── Footer ── */
-.footer {
-  text-align: center;
-  font-family: var(--font-display);
-  font-size: clamp(.52rem, 1.5vw, .6rem);
-  font-weight: 600;
-  color: var(--text-dim);
-  letter-spacing: .08em;
-  padding: .5rem 0 .25rem;
-}
-.footer span {
-  display: inline-block;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--cyan);
-  vertical-align: middle;
-  margin: 0 .4rem .1rem;
-  box-shadow: 0 0 5px var(--cyan);
-}
-
-@media (max-width: 480px) {
-  .rolls-grid { grid-template-columns: 1fr 1fr; }
-  .abilities-grid { grid-template-columns: 1fr; }
-  .ability.full { grid-column: 1; }
-}
+#rain-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#bubble-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.sheet{position:relative;z-index:1;width:100%;max-width:640px;display:flex;flex-direction:column;gap:.65rem;padding:clamp(1rem,4vw,2rem) clamp(.75rem,3vw,1rem);}
+.card,.header-card{background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border2);padding:clamp(1rem,3vw,1.35rem) var(--pad);position:relative;overflow:hidden;box-shadow:0 0 0 1px rgba(0,212,255,.04),inset 0 1px 0 rgba(0,212,255,.06);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--lilac),var(--coral),var(--mint),var(--gold),var(--peach),var(--cyan));opacity:.85;}
+.sec-label{font-family:var(--font-display);font-size:clamp(.58rem,1.6vw,.64rem);font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--text-dim);margin-bottom:clamp(.65rem,2vw,.95rem);}
+.header-card{background:linear-gradient(135deg,#181824 0%,#1a1828 50%,#1c1820 100%);border-color:var(--border-hot);box-shadow:0 0 0 1px rgba(0,212,255,.06),0 0 30px rgba(0,212,255,.05),inset 0 1px 0 rgba(0,212,255,.1);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;}
+.header-card::before{height:3px;opacity:1;}
+.header-card::after{content:'';position:absolute;right:-20px;bottom:-20px;width:140px;height:140px;background:radial-gradient(circle,rgba(0,212,255,.07) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+.char-name{font-family:var(--font-display);font-size:clamp(1.5rem,5vw,2rem);font-weight:700;color:var(--text);letter-spacing:-.01em;line-height:1;text-shadow:0 0 20px rgba(0,212,255,.25);}
+.char-meta{font-family:var(--font-body);font-size:clamp(.68rem,2vw,.76rem);color:var(--text-mid);margin-top:.3rem;font-weight:600;}
+.char-meta+.char-meta{margin-top:.1rem;}
+.char-meta.small{font-size:clamp(.58rem,1.7vw,.64rem);color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+.badge{text-align:right;flex-shrink:0;}
+.badge-label{font-family:var(--font-display);font-size:clamp(.54rem,1.5vw,.6rem);font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.12em;}
+.badge-value{font-family:var(--font-display);font-size:clamp(1.8rem,6vw,2.5rem);font-weight:700;color:var(--cyan);line-height:1;margin-top:.1rem;text-shadow:0 0 16px rgba(0,212,255,.5);}
+.bubbles{position:absolute;pointer-events:none;inset:0;overflow:hidden;border-radius:var(--radius);}
+.bubble{position:absolute;border-radius:50%;border:1px solid rgba(0,212,255,.15);background:rgba(0,212,255,.03);}
+.rolls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(.5rem,2vw,.65rem);}
+.roll-card{background:var(--bg-tint);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.7rem .9rem;display:flex;flex-direction:column;gap:.2rem;position:relative;overflow:hidden;transition:border-color .2s;}
+.roll-card:hover{border-color:var(--border-hot);}
+.roll-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
+.roll-card:nth-child(1)::after{background:var(--coral);box-shadow:0 0 6px var(--coral);}
+.roll-card:nth-child(2)::after{background:var(--lilac);box-shadow:0 0 6px var(--lilac);}
+.roll-card:nth-child(3)::after{background:var(--mint);box-shadow:0 0 6px var(--mint);}
+.roll-abbr{font-family:var(--font-display);font-size:clamp(.54rem,1.5vw,.6rem);font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.12em;}
+.roll-mod{font-family:var(--font-display);font-size:clamp(.9rem,2.8vw,1.1rem);font-weight:700;color:var(--text);}
+.roll-note{font-size:clamp(.58rem,1.6vw,.65rem);color:var(--text-mid);line-height:1.4;}
+.abilities-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(.6rem,2.2vw,.8rem);}
+.abilities-grid.single{grid-template-columns:1fr;}
+.ability{background:var(--bg-tint);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.85rem 1rem;display:flex;flex-direction:column;gap:.4rem;}
+.ability.full{grid-column:1/-1;}
+.ability-header{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.ability-tag{font-family:var(--font-display);font-size:clamp(.48rem,1.4vw,.53rem);font-weight:700;color:#0f0f13;background:var(--cyan);padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;box-shadow:0 0 8px rgba(0,212,255,.4);}
+.ability-tag.passive{background:var(--lilac);box-shadow:0 0 8px rgba(179,136,255,.4);}
+.ability-name{font-family:var(--font-display);font-size:clamp(.8rem,2.4vw,.9rem);font-weight:700;color:var(--text);}
+.ability-desc{font-size:clamp(.63rem,1.8vw,.7rem);color:var(--text-mid);line-height:1.6;}
+.limits-label{font-family:var(--font-display);font-size:clamp(.5rem,1.4vw,.56rem);font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--coral);margin-top:.25rem;text-shadow:0 0 8px rgba(255,107,138,.3);}
+.limit-item{display:flex;gap:.4rem;align-items:flex-start;margin-top:.28rem;}
+.limit-dot{width:5px;height:5px;border-radius:50%;background:var(--coral);margin-top:4px;flex-shrink:0;box-shadow:0 0 4px var(--coral);}
+.limit-text{font-size:clamp(.6rem,1.7vw,.66rem);color:var(--text-mid);line-height:1.5;}
+.limit-text b{color:var(--text);font-weight:700;}
+.lore-block{display:flex;flex-direction:column;gap:.65rem;}
+.lore-text{font-size:clamp(.66rem,1.9vw,.73rem);color:var(--text-mid);line-height:1.75;}
+.lore-text+.lore-text{padding-top:.65rem;border-top:1px solid rgba(0,212,255,.08);}
+.lore-text em{color:var(--cyan);font-style:italic;text-shadow:0 0 8px rgba(0,212,255,.3);}
+.footer{text-align:center;font-family:var(--font-display);font-size:clamp(.52rem,1.5vw,.6rem);font-weight:600;color:var(--text-dim);letter-spacing:.08em;padding:.5rem 0 .25rem;}
+.footer span{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--cyan);vertical-align:middle;margin:0 .4rem .1rem;box-shadow:0 0 5px var(--cyan);}
+@media(max-width:480px){.rolls-grid{grid-template-columns:1fr 1fr;}.abilities-grid{grid-template-columns:1fr;}.ability.full{grid-column:1;}}
 </style>
 </head>
 <body>
+<canvas id="rain-canvas"></canvas>
+<canvas id="bubble-canvas"></canvas>
 <div class="sheet">
-
   <div class="header-card">
     <div class="bubbles">
       <div class="bubble" style="width:70px;height:70px;top:-20px;right:100px;"></div>
@@ -399,104 +89,175 @@ body::before {
     </div>
     <div>
       <div class="char-name">Odette</div>
-      <div class="char-meta">Player: Josslyn</div>
+      <div class="char-meta">User: Odette &nbsp;·&nbsp; Player: Josslyn</div>
       <div class="char-meta small">Conjuration EVO — Rainfall</div>
     </div>
-    <div class="badge">
-      <div class="badge-label">Level</div>
-      <div class="badge-value">01</div>
-    </div>
+    <div class="badge"><div class="badge-label">Level</div><div class="badge-value">01</div></div>
   </div>
-
   <div class="card">
-    <div class="bubbles">
-      <div class="bubble" style="width:32px;height:32px;top:-10px;right:24px;"></div>
-      <div class="bubble" style="width:18px;height:18px;bottom:10px;right:65px;"></div>
-    </div>
     <div class="sec-label">Rolls</div>
     <div class="rolls-grid">
-      <div class="roll-card">
-        <div class="roll-abbr">STR</div>
-        <div class="roll-mod">d20 + 1</div>
-        <div class="roll-note">physical attacks and actions</div>
-      </div>
-      <div class="roll-card">
-        <div class="roll-abbr">MND</div>
-        <div class="roll-mod">d20 + 3</div>
-        <div class="roll-note">intellectual and mental actions</div>
-      </div>
-      <div class="roll-card">
-        <div class="roll-abbr">SOL</div>
-        <div class="roll-mod">d20 + 2</div>
-        <div class="roll-note">belief, instinct, willpower</div>
-      </div>
+      <div class="roll-card"><div class="roll-abbr">STR</div><div class="roll-mod">d20 + 1</div><div class="roll-note">physical attacks and actions</div></div>
+      <div class="roll-card"><div class="roll-abbr">MND</div><div class="roll-mod">d20 + 3</div><div class="roll-note">intellectual and mental actions</div></div>
+      <div class="roll-card"><div class="roll-abbr">SOL</div><div class="roll-mod">d20 - 1</div><div class="roll-note">belief, instinct, willpower</div></div>
     </div>
   </div>
-
   <div class="card">
-    <div class="bubbles">
-      <div class="bubble" style="width:24px;height:24px;top:10px;right:32px;"></div>
-      <div class="bubble" style="width:44px;height:44px;bottom:-14px;right:85px;"></div>
-    </div>
-    <div class="sec-label">Abilities</div>
+    <div class="sec-label">Abilities &nbsp;·&nbsp; Conjuration EVO — "Rainfall"</div>
     <div class="abilities-grid">
-
       <div class="ability">
-        <div class="ability-header">
-          <span class="ability-tag">active</span>
-          <span class="ability-name">Water Control</span>
-        </div>
-        <div class="ability-desc">Can treat water as a solid — shaping and holding it in place completely at will.</div>
+        <div class="ability-header"><span class="ability-tag">active</span><span class="ability-name">Water Control</span></div>
+        <div class="ability-desc">Treats water as a solid — shaping and holding it in place completely at will.</div>
         <div class="limits-label">Limits</div>
-        <div class="limit-item">
-          <div class="limit-dot"></div>
-          <div class="limit-text">Move it too fast and it loses form and drops.</div>
-        </div>
-        <div class="limit-item">
-          <div class="limit-dot"></div>
-          <div class="limit-text">Anything beyond a few gallons gets unstable.</div>
-        </div>
+        <div class="limit-item"><div class="limit-dot"></div><div class="limit-text">Move it too fast and it loses form and drops.</div></div>
+        <div class="limit-item"><div class="limit-dot"></div><div class="limit-text">Anything beyond a few gallons gets unstable.</div></div>
       </div>
-
       <div class="ability">
-        <div class="ability-header">
-          <span class="ability-tag passive">passive</span>
-          <span class="ability-name">Weather Draw</span>
-        </div>
+        <div class="ability-header"><span class="ability-tag passive">passive</span><span class="ability-name">Weather Draw</span></div>
         <div class="ability-desc">Passively pulls light moisture from the air around her at all times.</div>
         <div class="limits-label">Limits</div>
-        <div class="limit-item">
-          <div class="limit-dot"></div>
-          <div class="limit-text">Cannot create water — only interact with what's already present.</div>
-        </div>
+        <div class="limit-item"><div class="limit-dot"></div><div class="limit-text">Cannot create water — only interact with what's already present.</div></div>
       </div>
-
     </div>
   </div>
-
   <div class="card">
-    <div class="bubbles">
-      <div class="bubble" style="width:55px;height:55px;top:-12px;right:35px;"></div>
-      <div class="bubble" style="width:20px;height:20px;top:22px;right:12px;"></div>
-      <div class="bubble" style="width:28px;height:28px;bottom:12px;left:22px;"></div>
-    </div>
     <div class="sec-label">Lore</div>
     <div class="lore-block">
+
+      <!-- characteristics -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.28rem 2rem;padding-bottom:.9rem;border-bottom:1px solid var(--border2);">
+        <div style="display:flex;gap:.5rem;align-items:baseline;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">pronouns</span><span style="font-size:.65rem;color:var(--text-mid);">she / her</span></div>
+        <div style="display:flex;gap:.5rem;align-items:baseline;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">age</span><span style="font-size:.65rem;color:var(--text-mid);">~19–20</span></div>
+        <div style="display:flex;gap:.5rem;align-items:baseline;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">clothes</span><span style="font-size:.65rem;color:var(--text-mid);">maximum color, always — deliberate contrast to the black she wore her whole life</span></div>
+        <div style="display:flex;gap:.5rem;align-items:baseline;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">origin</span><span style="font-size:.65rem;color:var(--text-mid);">cult-raised from birth · former priestess</span></div>
+        <div style="display:flex;gap:.5rem;align-items:baseline;grid-column:1/-1;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">personality</span><span style="font-size:.65rem;color:var(--text-mid);">relentlessly optimistic out of terror · afraid of what comes after death · still afraid she was wrong to leave · carries guilt she won't name</span></div>
+        <div style="display:flex;gap:.5rem;align-items:baseline;grid-column:1/-1;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">likes / dislikes</span><span style="font-size:.65rem;color:var(--text-dim);font-style:italic;">— not yet established</span></div>
+      </div>
+
       <div class="lore-text">Odette was never found — she was delivered, or so she was told. Abandoned as a baby, the cult took her in and decided immediately that God had sent her to them. Her ability made the story easy to sell. She was raised quiet and obedient, trained to serve, and eventually made their <em>priestess</em>. She has killed people in that role. More than she can make peace with.</div>
       <div class="lore-text">The cult wears black to mourn the world they believe is dying. Their highest honor is death — a public ritual killing that means you've earned heaven. The leaders haven't died yet because they claim it's their sacred duty to send others first. Odette believed all of it. Then she started pulling on threads.</div>
       <div class="lore-text">What she found was that her mother had tried to leave when Odette was born — and they killed her for it. The story of the abandoned baby was a cover. The whole system was a lie built to keep people compliant and the powerful comfortable. She ran. She tells herself she was a coward for not exposing it. She's probably right, and she knows it.</div>
-      <div class="lore-text">Now she dresses in as much color as she can find — a deliberate contrast to the black she wore her whole life, and a practical disguise. She is relentlessly optimistic in a way that reads almost wrong given everything, but it comes from fear: she has <em>no idea</em> what happens after death, and that terrifies her more than anything the apocalypse can throw at her. Life feels like a gift because she doesn't know what comes next — and somewhere underneath that, she's still afraid she'll find out she was wrong to leave.</div>
+      <div class="lore-text">Now she dresses in as much color as she can find — a deliberate contrast to the black she wore her whole life, and a practical disguise. She is relentlessly optimistic in a way that reads almost wrong given everything, but it comes from fear: she has <em>no idea</em> what happens after death, and that terrifies her more than anything the apocalypse can throw at her.</div>
     </div>
   </div>
-
-  <div class="footer">
-    stats update on level up only
-    <span></span>
-    post-collapse 2004
-    <span></span>
-    conjuration evo
-  </div>
-
+  <div class="footer">stats update on level up only<span></span>post-collapse 2004<span></span>conjuration evo</div>
 </div>
+<script>
+// React Bits-inspired: Physics rain streaks + floating bubble system
+const rain = document.getElementById('rain-canvas');
+const rctx = rain.getContext('2d');
+const bub = document.getElementById('bubble-canvas');
+const bctx = bub.getContext('2d');
+let W, H;
+function resize() {
+  W = rain.width = bub.width = window.innerWidth;
+  H = rain.height = bub.height = window.innerHeight;
+}
+resize(); window.addEventListener('resize', () => { resize(); initDrops(); initBubbles(); });
+
+// Rain drops
+class Drop {
+  reset(initial) {
+    this.x = Math.random() * W;
+    this.y = initial ? Math.random() * H : -20;
+    this.len = Math.random() * 18 + 8;
+    this.speed = Math.random() * 4 + 6;
+    this.alpha = Math.random() * .18 + .06;
+    this.width = Math.random() < .3 ? 1.5 : 1;
+  }
+  constructor() { this.reset(true); }
+  update() { this.y += this.speed; if (this.y > H + 20) this.reset(false); }
+  draw() {
+    rctx.save();
+    rctx.strokeStyle = `rgba(0,180,230,${this.alpha})`;
+    rctx.lineWidth = this.width;
+    rctx.shadowColor = 'rgba(0,212,255,.3)';
+    rctx.shadowBlur = 3;
+    rctx.beginPath();
+    rctx.moveTo(this.x, this.y);
+    rctx.lineTo(this.x - this.len * .1, this.y + this.len);
+    rctx.stroke();
+    rctx.restore();
+  }
+}
+
+class Splash {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.particles = Array.from({length: 4}, () => ({
+      vx: (Math.random() - .5) * 2.5,
+      vy: -(Math.random() * 2 + 1),
+      life: 1, r: Math.random() * 1.5 + .5
+    }));
+  }
+  update() { this.particles.forEach(p => { p.x = (p.x||this.x) + p.vx; p.y = (p.y||this.y) + p.vy; p.vy += .12; p.life -= .06; }); }
+  dead() { return this.particles.every(p => p.life <= 0); }
+  draw() {
+    this.particles.forEach(p => {
+      if (p.life <= 0) return;
+      rctx.beginPath();
+      rctx.arc(p.x||this.x, p.y||this.y, p.r, 0, Math.PI*2);
+      rctx.fillStyle = `rgba(0,212,255,${p.life * .4})`;
+      rctx.fill();
+    });
+  }
+}
+
+let drops = [], splashes = [];
+function initDrops() { drops = Array.from({length: Math.min(80, W/14)}, () => new Drop()); }
+initDrops();
+
+// Bubbles
+class Bubble {
+  reset(initial) {
+    this.x = Math.random() * W;
+    this.y = initial ? Math.random() * H : H + 30;
+    this.r = Math.random() * 12 + 4;
+    this.vx = (Math.random() - .5) * .4;
+    this.vy = -(Math.random() * .6 + .2);
+    this.life = 0; this.maxLife = Math.random() * 500 + 300;
+    this.wobble = Math.random() * Math.PI * 2;
+  }
+  constructor() { this.reset(true); }
+  update() {
+    this.wobble += .03;
+    this.x += this.vx + Math.sin(this.wobble) * .3;
+    this.y += this.vy;
+    this.life++;
+    if (this.life > this.maxLife || this.y < -30) this.reset(false);
+  }
+  draw() {
+    const t = this.life / this.maxLife;
+    const a = t < .2 ? t/.2 : t > .8 ? (1-t)/.2 : 1;
+    bctx.save();
+    bctx.beginPath();
+    bctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+    bctx.strokeStyle = `rgba(0,200,240,${a * .25})`;
+    bctx.lineWidth = 1;
+    // shine
+    const g = bctx.createRadialGradient(this.x - this.r*.3, this.y - this.r*.3, 0, this.x, this.y, this.r);
+    g.addColorStop(0, `rgba(255,255,255,${a*.08})`);
+    g.addColorStop(1, `rgba(0,180,220,${a*.03})`);
+    bctx.fillStyle = g;
+    bctx.fill(); bctx.stroke();
+    bctx.restore();
+  }
+}
+
+let bubbles = [];
+function initBubbles() { bubbles = Array.from({length: 25}, () => new Bubble()); }
+initBubbles();
+
+function frame() {
+  rctx.clearRect(0, 0, W, H);
+  drops.forEach(d => { d.update(); d.draw(); if (d.y > H - 5 && Math.random() < .04) splashes.push(new Splash(d.x, H)); });
+  splashes.forEach(s => { s.update(); s.draw(); });
+  splashes = splashes.filter(s => !s.dead());
+  bctx.clearRect(0, 0, W, H);
+  bubbles.forEach(b => { b.update(); b.draw(); });
+  requestAnimationFrame(frame);
+}
+frame();
+</script>
 </body>
 </html>
