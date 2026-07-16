@@ -3,764 +3,1956 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Odette — Character Sheet</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;1,400&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<title>Odette — Secret Side</title>
 <style>
+
+/* ══════════════════════════════════════════
+   VARIABLES
+   ══════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap');
+
 :root {
-  --font-display:'Quicksand',sans-serif;
-  --font-body:'Nunito',sans-serif;
-  --bg:#0f0f13;--bg-card:#1c1c26;--bg-tint:#21212e;--bg-inset:#191920;
-  --border:rgba(100,200,255,.10);--border2:rgba(100,200,255,.18);--border-hot:rgba(100,200,255,.32);
-  --cyan:#00d4ff;--cyan2:#00aadd;--cyan3:#007aaa;
-  --coral:#ff6b8a;--mint:#00e5a0;--gold:#ffc947;--lilac:#b388ff;--peach:#ff9a6c;
-  --text:#e8f4ff;--text-mid:#8ab0c8;--text-dim:#445a70;
-  --pad:clamp(1.1rem,4vw,1.6rem);--radius:14px;--radius-sm:9px;
+  --bg:           #0a2a3a;
+  --panel:        #0e3347;
+  --panel2:       #123d55;
+  --border:       #1a5470;
+  --border2:      #2076a0;
+  --accent:       #e040a0;
+  --text:         #e8f6f8;
+  --muted:        #4a8fa8;
+  --dim:          #6aadca;
+  --input:        #081e2b;
+  --red:          #e05555;
+  --green:        #2ecc9a;
+  --shadow-sm:    0 2px 12px rgba(0,0,0,0.5);
+  --font-main:    'Nunito', system-ui, sans-serif;
+  --font-display: 'Pacifico', cursive;
+  --radius:       6px;
+  --radius-lg:    10px;
+  --accent2:      #00c9b1;
+  --accent3:      #ff6b6b;
+  --transition:   0.15s;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%}
-body{
-  background:var(--bg);
-  background-image:radial-gradient(ellipse 60% 40% at 15% 10%,rgba(0,212,255,.07) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 85% 85%,rgba(179,136,255,.06) 0%,transparent 60%);
-  font-family:var(--font-body);min-height:100vh;
-  display:flex;align-items:flex-start;justify-content:center;
-  padding:0;overflow-x:hidden;position:relative;
+
+/* ══════════════════════════════════════════
+   RESET & BASE
+   ══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-main); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+input, textarea, button, select { font-family: var(--font-main); }
+input[type=number] { -moz-appearance: textfield; }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* ══════════════════════════════════════════
+   LAYOUT
+   ══════════════════════════════════════════ */
+.page { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; display: flex; flex-direction: column; gap: 12px; }
+
+/* ══════════════════════════════════════════
+   EDIT MODE
+   locked fields are invisible when not editing —
+   they show their value as plain text via ::before
+   trick isn't needed; we use opacity + pointer-events
+   ══════════════════════════════════════════ */
+.edit-bar { display: flex; justify-content: flex-end; }
+.edit-btn {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  background: none; border: 1px solid var(--border2); color: var(--muted);
+  padding: 4px 14px; border-radius: 99px; cursor: pointer; transition: all var(--transition);
 }
-#rain-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
-#bubble-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
-.sheet{position:relative;z-index:1;width:100%;max-width:640px;display:flex;flex-direction:column;gap:.65rem;padding:clamp(1rem,4vw,2rem) clamp(.75rem,3vw,1rem);}
-.card,.header-card{background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border2);padding:clamp(1rem,3vw,1.35rem) var(--pad);position:relative;overflow:hidden;box-shadow:0 0 0 1px rgba(0,212,255,.04),inset 0 1px 0 rgba(0,212,255,.06);}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--lilac),var(--coral),var(--mint),var(--gold),var(--peach),var(--cyan));opacity:.85;}
-.sec-label{font-family:var(--font-display);font-size:clamp(.58rem,1.6vw,.64rem);font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--text-dim);margin-bottom:clamp(.65rem,2vw,.95rem);}
-.header-card{background:linear-gradient(135deg,#181824 0%,#1a1828 50%,#1c1820 100%);border-color:var(--border-hot);box-shadow:0 0 0 1px rgba(0,212,255,.06),0 0 30px rgba(0,212,255,.05),inset 0 1px 0 rgba(0,212,255,.1);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;}
-.header-card::before{height:3px;opacity:1;}
-.header-card::after{content:'';position:absolute;right:-20px;bottom:-20px;width:140px;height:140px;background:radial-gradient(circle,rgba(0,212,255,.07) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
-.char-name{font-family:var(--font-display);font-size:clamp(1.5rem,5vw,2rem);font-weight:700;color:var(--text);letter-spacing:-.01em;line-height:1;text-shadow:0 0 20px rgba(0,212,255,.25);}
-.char-meta{font-family:var(--font-body);font-size:clamp(.68rem,2vw,.76rem);color:var(--text-mid);margin-top:.3rem;font-weight:600;}
-.char-meta+.char-meta{margin-top:.1rem;}
-.char-meta.small{font-size:clamp(.58rem,1.7vw,.64rem);color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
-.badge{text-align:right;flex-shrink:0;}
-.badge-label{font-family:var(--font-display);font-size:clamp(.54rem,1.5vw,.6rem);font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.12em;}
-.badge-value{font-family:var(--font-display);font-size:clamp(1.8rem,6vw,2.5rem);font-weight:700;color:var(--cyan);line-height:1;margin-top:.1rem;text-shadow:0 0 16px rgba(0,212,255,.5);}
-.bubbles{position:absolute;pointer-events:none;inset:0;overflow:hidden;border-radius:var(--radius);}
-.bubble{position:absolute;border-radius:50%;border:1px solid rgba(0,212,255,.15);background:rgba(0,212,255,.03);}
-.rolls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(.5rem,2vw,.65rem);}
-.roll-card{background:var(--bg-tint);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.7rem .9rem;display:flex;flex-direction:column;gap:.2rem;position:relative;overflow:hidden;transition:border-color .2s;}
-.roll-card:hover{border-color:var(--border-hot);}
-.roll-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
-.roll-card:nth-child(1)::after{background:var(--coral);box-shadow:0 0 6px var(--coral);}
-.roll-card:nth-child(2)::after{background:var(--lilac);box-shadow:0 0 6px var(--lilac);}
-.roll-card:nth-child(3)::after{background:var(--mint);box-shadow:0 0 6px var(--mint);}
-.roll-abbr{font-family:var(--font-display);font-size:clamp(.54rem,1.5vw,.6rem);font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.12em;}
-.roll-mod{font-family:var(--font-display);font-size:clamp(.9rem,2.8vw,1.1rem);font-weight:700;color:var(--text);}
-.roll-note{font-size:clamp(.58rem,1.6vw,.65rem);color:var(--text-mid);line-height:1.4;}
-.abilities-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(.6rem,2.2vw,.8rem);}
-.abilities-grid.single{grid-template-columns:1fr;}
-.ability{background:var(--bg-tint);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.85rem 1rem;display:flex;flex-direction:column;gap:.4rem;}
-.ability.full{grid-column:1/-1;}
-.ability-header{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
-.ability-tag{font-family:var(--font-display);font-size:clamp(.48rem,1.4vw,.53rem);font-weight:700;color:#0f0f13;background:var(--cyan);padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;box-shadow:0 0 8px rgba(0,212,255,.4);}
-.ability-tag.passive{background:var(--lilac);box-shadow:0 0 8px rgba(179,136,255,.4);}
-.ability-name{font-family:var(--font-display);font-size:clamp(.8rem,2.4vw,.9rem);font-weight:700;color:var(--text);}
-.ability-desc{font-size:clamp(.63rem,1.8vw,.7rem);color:var(--text-mid);line-height:1.6;}
-.limits-label{font-family:var(--font-display);font-size:clamp(.5rem,1.4vw,.56rem);font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--coral);margin-top:.25rem;text-shadow:0 0 8px rgba(255,107,138,.3);}
-.limit-item{display:flex;gap:.4rem;align-items:flex-start;margin-top:.28rem;}
-.limit-dot{width:5px;height:5px;border-radius:50%;background:var(--coral);margin-top:4px;flex-shrink:0;box-shadow:0 0 4px var(--coral);}
-.limit-text{font-size:clamp(.6rem,1.7vw,.66rem);color:var(--text-mid);line-height:1.5;}
-.limit-text b{color:var(--text);font-weight:700;}
-.lore-block{display:flex;flex-direction:column;gap:.65rem;}
-.lore-text{font-size:clamp(.66rem,1.9vw,.73rem);color:var(--text-mid);line-height:1.75;}
-.lore-text+.lore-text{padding-top:.65rem;border-top:1px solid rgba(0,212,255,.08);}
-.lore-text em{color:var(--cyan);font-style:italic;text-shadow:0 0 8px rgba(0,212,255,.3);}
-.footer{text-align:center;font-family:var(--font-display);font-size:clamp(.52rem,1.5vw,.6rem);font-weight:600;color:var(--text-dim);letter-spacing:.08em;padding:.5rem 0 .25rem;}
-.footer span{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--cyan);vertical-align:middle;margin:0 .4rem .1rem;box-shadow:0 0 5px var(--cyan);}
-@media(max-width:480px){.rolls-grid{grid-template-columns:1fr 1fr;}.abilities-grid{grid-template-columns:1fr;}.ability.full{grid-column:1;}}
+.edit-btn:hover, .edit-btn.active { border-color: var(--accent); color: var(--accent); }
+
+/* When NOT editing: locked inputs show value as plain text, no chrome */
+.locked-field {
+  background: none; border: none; outline: none;
+  color: var(--text); cursor: default; pointer-events: none;
+  transition: border-color var(--transition), opacity var(--transition);
+}
+/* underline + cursor appear only in edit mode */
+body.editing .locked-field           { pointer-events: auto; cursor: text; }
+body.editing input.locked-field      { border-bottom: 1px solid var(--border2); }
+body.editing input.locked-field:focus{ border-bottom-color: var(--accent); }
+body.editing select.locked-field     { pointer-events: auto; cursor: pointer; border-bottom: 1px solid var(--border2); }
+body.editing select.locked-field:focus { border-bottom-color: var(--accent); }
+
+/* init bonus buttons */
+.init-adj-btn        { transition: all var(--transition); }
+.init-adj-btn.hidden-ctrl { display: none; }
+
+/* ══════════════════════════════════════════
+   ROLL TOASTS — stacking slide-up notifications
+   ══════════════════════════════════════════ */
+#toastStack {
+  position: fixed; bottom: 76px; left: 24px; z-index: 197;
+  display: flex; flex-direction: column; gap: 6px;
+  pointer-events: none;
+}
+.toast-item {
+  background: var(--panel2); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 8px 14px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.55);
+  min-width: 120px; max-width: 200px;
+  transform: translateY(12px); opacity: 0;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.toast-item.show { transform: translateY(0); opacity: 1; }
+.toast-item.hide { transform: translateY(-8px); opacity: 0; }
+.toast-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.toast-total-row { display: flex; align-items: baseline; gap: 6px; }
+.toast-total {
+  font-size: 20px; font-weight: 700; color: var(--text); line-height: 1;
+}
+.toast-total.crit { color: #f0c040; }
+.toast-total.fail { color: var(--red); }
+.toast-rolled { font-size: 11px; color: var(--muted); font-weight: 600; }
+.toast-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ══════════════════════════════════════════
+   DICE ROLLER BUTTON + PANEL
+   ══════════════════════════════════════════ */
+#diceBtn {
+  position: fixed; bottom: 24px; left: 24px; z-index: 9999;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--panel2); border: 1px solid var(--border2);
+  color: var(--text); cursor: pointer; font-size: 22px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-sm); transition: all var(--transition);
+}
+#diceBtn:hover { border-color: var(--accent); color: var(--accent); }
+#diceBtn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+#dicePanel {
+  position: fixed; bottom: 76px; left: 24px; z-index: 9999;
+  background: var(--panel); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 14px 16px 10px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+  display: none; flex-direction: column; gap: 10px;
+  min-width: 210px;
+}
+#dicePanel.open { display: flex; }
+.dice-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+}
+.dice-die {
+  display: flex; align-items: center; justify-content: center;
+  padding: 7px 4px; border: 1px solid var(--border2); border-radius: var(--radius);
+  cursor: pointer; background: var(--panel2); transition: all var(--transition);
+  position: relative; user-select: none;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--dim); text-transform: uppercase;
+}
+.dice-die:hover { border-color: var(--accent); color: var(--accent); }
+.dice-die.selected { border-color: var(--accent); background: rgba(200,168,75,0.12); color: var(--accent); }
+.dice-die-count {
+  position: absolute; top: -5px; right: -5px;
+  background: var(--accent); color: var(--bg);
+  font-size: 9px; font-weight: 700; border-radius: 99px;
+  min-width: 16px; height: 16px; display: none;
+  align-items: center; justify-content: center; padding: 0 3px;
+}
+.dice-die-count.visible { display: flex; }
+.dice-actions { display: flex; gap: 6px; }
+.dice-roll-btn {
+  flex: 1; padding: 7px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--accent); color: var(--bg); border: none;
+  border-radius: var(--radius); cursor: pointer; transition: filter var(--transition);
+}
+.dice-roll-btn:hover { filter: brightness(1.15); }
+.dice-reset-btn {
+  flex: 1; padding: 7px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: none; color: var(--muted); border: 1px solid var(--border2);
+  border-radius: var(--radius); cursor: pointer; transition: all var(--transition);
+}
+.dice-reset-btn:hover { border-color: var(--text); color: var(--text); }
+
+/* ══════════════════════════════════════════
+   CARDS
+   ══════════════════════════════════════════ */
+.card { background: var(--panel); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 16px 18px; }
+.card-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em;
+  color: var(--muted); margin-bottom: 12px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border2); display: flex; align-items: center; gap: 8px;
+}
+.card-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ══════════════════════════════════════════
+   HEADER
+   ══════════════════════════════════════════ */
+.header-grid { display: grid; grid-template-columns: 1fr auto; gap: 10px 20px; align-items: start; }
+
+.char-name-input {
+  font-size: 28px; font-weight: 700; background: none; border: none;
+  border-bottom: 1px solid transparent; color: var(--text); padding: 0;
+  outline: none; width: 100%; line-height: 1.1; transition: border-color var(--transition);
+}
+.char-name-input::placeholder { color: var(--muted); }
+
+.field-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); display: block; margin-bottom: 3px; }
+
+.plain-field {
+  background: none; border: none; border-bottom: 1px solid transparent;
+  color: var(--text); font-size: 13px; padding: 2px 0; outline: none;
+  width: 100%; transition: border-color var(--transition);
+}
+.plain-field::placeholder { color: var(--muted); }
+
+.meta-row  { display: flex; gap: 16px; flex-wrap: wrap; }
+.meta-field { display: flex; flex-direction: column; gap: 2px; }
+.meta-field .plain-field { min-width: 120px; }
+
+.power-line {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  font-size: 12px; color: var(--dim); padding-top: 4px; border-top: 1px solid var(--border);
+}
+.power-sep { color: var(--muted); }
+.power-field {
+  background: none; border: none; border-bottom: 1px solid transparent;
+  color: var(--dim); font-size: 12px; padding: 1px 0; outline: none;
+  transition: border-color var(--transition);
+}
+.power-field::placeholder { color: var(--muted); }
+.power-field.pf-name { width: 160px; }
+.power-select {
+  background: none; border: none; border-bottom: 1px solid transparent;
+  color: var(--dim); font-size: 12px; padding: 1px 0; outline: none;
+  -webkit-appearance: none; appearance: none; transition: border-color var(--transition);
+}
+.power-select option { background: var(--panel); color: var(--text); }
+
+/* ══════════════════════════════════════════
+   HP WIDGET
+   ══════════════════════════════════════════ */
+.hp-widget { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; height: 100%; justify-content: space-between; }
+.hp-row-top { display: flex; align-items: center; gap: 6px; }
+.hp-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+.hp-display { display: flex; align-items: center; gap: 4px; }
+.hp-num {
+  font-size: 18px; font-weight: 700; background: none; border: none;
+  border-bottom: 1px solid transparent; color: var(--text); width: 40px;
+  text-align: center; padding: 0; outline: none; line-height: 1;
+  transition: border-color var(--transition);
+}
+.hp-num::placeholder { color: var(--muted); }
+.hp-slash { font-size: 16px; color: var(--muted); }
+.hp-amt {
+  font-size: 11px; background: var(--input); border: 1px solid var(--border2);
+  color: var(--text); width: 28px; text-align: center; padding: 2px 3px;
+  border-radius: var(--radius); outline: none;
+}
+.hp-amt:focus { border-color: var(--accent); }
+.hp-ctrl-btn {
+  font-size: 12px; font-weight: 700; width: 22px; height: 22px;
+  border: 1px solid var(--border2); background: none; border-radius: var(--radius);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition); line-height: 1;
+}
+.hp-ctrl-btn.heal { border-color: var(--green); color: var(--green); }
+.hp-ctrl-btn.dmg  { border-color: var(--red);   color: var(--red); }
+.hp-ctrl-btn:hover { filter: brightness(1.3); }
+.hp-flash { font-size: 10px; font-weight: 700; min-width: 18px; text-align: right; }
+.hp-flash.pos { color: var(--green); }
+.hp-flash.neg { color: var(--red); }
+
+/* ══════════════════════════════════════════
+   LEVEL
+   ══════════════════════════════════════════ */
+.level-row { display: flex; align-items: baseline; justify-content: flex-end; gap: 6px; }
+.level-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+.level-val {
+  font-size: 42px; font-weight: 700; line-height: 1; background: none; border: none;
+  border-bottom: 1px solid transparent; color: var(--accent);
+  width: 64px; text-align: center; padding: 0; outline: none;
+  transition: border-color var(--transition);
+}
+
+/* ══════════════════════════════════════════
+   SIDE COLUMN: INITIATIVE + AC + IMAGE
+   ══════════════════════════════════════════ */
+.rolls-initiative-wrap { display: flex; gap: 12px; align-items: stretch; }
+.side-column { display: flex; flex-direction: column; gap: 12px; width: 120px; flex-shrink: 0; }
+
+.initiative-card { width: 100%; transition: filter var(--transition); }
+.initiative-card:hover { filter: brightness(1.15); }
+.initiative-body {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 0 0 10px;
+}
+/* Big +# modifier — always shown, always signed */
+.init-modifier {
+  font-size: 38px; font-weight: 700; color: var(--accent);
+  text-align: center; line-height: 1; letter-spacing: -1px;
+}
+/* Flash result overlays the modifier briefly */
+.init-result { display: none; }
+.init-bonus-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+.init-adj-btn {
+  font-size: 13px; font-weight: 700; width: 18px; height: 18px;
+  border: 1px solid var(--border2); background: none; color: var(--dim);
+  border-radius: var(--radius); cursor: pointer; display: flex;
+  align-items: center; justify-content: center; line-height: 1;
+  transition: all var(--transition);
+}
+.init-adj-btn:hover { border-color: var(--accent); color: var(--accent); }
+.init-bonus-val {
+  font-size: 11px; font-weight: 700; color: var(--muted); min-width: 24px; text-align: center;
+}
+
+/* Stat roll line — whole thing is clickable */
+.stat-roll-line {
+  display: flex; align-items: center; justify-content: center;
+  padding: 5px 14px; border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02); cursor: pointer;
+  transition: background var(--transition);
+}
+.stat-roll-line:hover { background: rgba(200,168,75,0.08); }
+.stat-roll-text { font-size: 12px; font-weight: 700; color: var(--accent); }
+
+/* Skill rows — entire row is the roll button */
+.skill-row {
+  display: flex; align-items: center; padding: 5px 14px; gap: 6px;
+  transition: background var(--transition); cursor: pointer;
+}
+.skill-row:hover { background: rgba(200,168,75,0.08); }
+.skill-name {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--dim); flex: 1; white-space: nowrap;
+}
+.skill-mods { display: flex; align-items: center; gap: 4px; }
+.skill-base-mod { font-size: 12px; font-weight: 700; color: var(--accent); min-width: 20px; text-align: center; }
+.skill-sep { color: var(--border2); font-size: 10px; }
+.prof-val {
+  font-size: 12px; font-weight: 700; background: none; border: none;
+  border-bottom: 1px dashed var(--border2); color: var(--dim); width: 22px;
+  text-align: center; padding: 0; outline: none; transition: border-color var(--transition);
+  cursor: text;
+}
+.prof-val:focus { border-bottom-color: var(--accent); }
+.prof-label { font-size: 9px; color: var(--muted); letter-spacing: 0.05em; }
+/* Roll result — left side of row, small, fades in */
+.roll-result { display: none; }
+
+/* AC — just the number, override only visible in edit mode */
+.ac-card { }
+.ac-body { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0 6px; }
+.ac-derived {
+  font-size: 40px; font-weight: 700; color: var(--text); line-height: 1;
+}
+.ac-sub { display: none; } /* hidden — number speaks for itself */
+.ac-override {
+  font-size: 10px; background: none; border: none; border-bottom: 1px solid transparent;
+  color: var(--muted); width: 72px; text-align: center; padding: 1px 0; outline: none;
+  transition: border-color var(--transition); display: none;
+}
+.ac-override::placeholder { color: var(--border2); font-style: italic; }
+body.editing .ac-override { display: block; border-bottom-color: var(--border2); }
+body.editing .ac-override:focus { border-bottom-color: var(--accent); }
+
+/* IMAGE UPLOAD */
+.img-card { cursor: pointer; padding: 0; overflow: hidden; position: relative; flex: 1; min-height: 80px; }
+.img-card:hover .img-overlay { opacity: 1; }
+.img-upload-input { display: none; }
+.img-placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 5px; padding: 16px 8px; color: var(--muted); text-align: center;
+  font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+  border: 1px dashed var(--border2); border-radius: var(--radius-lg);
+  height: 100%; box-sizing: border-box; transition: border-color var(--transition);
+}
+.img-placeholder:hover { border-color: var(--accent); color: var(--accent); }
+.img-placeholder-icon { font-size: 20px; opacity: 0.5; }
+.img-preview {
+  display: none; border-radius: var(--radius-lg);
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain; object-position: center;
+}
+.img-preview.loaded { display: block; }
+.img-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity var(--transition); border-radius: var(--radius-lg);
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text); cursor: pointer;
+}
+
+/* ══════════════════════════════════════════
+   STATS + SKILLS
+   ══════════════════════════════════════════ */
+.stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+.stat-col {
+  background: var(--panel2); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); display: flex; flex-direction: column;
+}
+.stat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px 8px; border-bottom: 1px solid var(--border);
+}
+.stat-name {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--muted);
+}
+.stat-val {
+  font-size: 26px; font-weight: 700; background: none; border: none;
+  border-bottom: 1px solid transparent; color: var(--text);
+  width: 44px; text-align: right; padding: 0; outline: none;
+  transition: border-color var(--transition); line-height: 1;
+}
+.stat-val::placeholder { color: var(--muted); }
+body.editing .stat-val { border-bottom-color: var(--border2); }
+body.editing .stat-val:focus { border-bottom-color: var(--accent); }
+.stat-roll-line {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 14px; border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.stat-roll-text { font-size: 12px; font-weight: 700; color: var(--accent); }
+.skills-list { padding: 4px 0 6px; display: flex; flex-direction: column; }
+.skill-row {
+  display: flex; align-items: center; padding: 4px 10px 4px 14px; gap: 8px;
+  transition: background var(--transition); cursor: pointer; border-radius: 3px;
+}
+.skill-row:hover { background: rgba(200,168,75,0.07); }
+.skill-row:hover .skill-badge { border-color: var(--accent); color: var(--accent); }
+.skill-name {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--dim); flex: 1; white-space: nowrap;
+}
+.skill-mods { display: flex; align-items: center; gap: 4px; }
+.skill-base-mod { display: none; }
+.skill-sep { display: none; }
+body.editing .skill-sep { display: inline; color: var(--border2); font-size: 9px; }
+.prof-val {
+  font-size: 11px; font-weight: 700; background: none; border: none;
+  border-bottom: 1px dashed var(--border2); color: var(--dim); width: 20px;
+  text-align: center; padding: 0; outline: none; transition: border-color var(--transition);
+  cursor: text;
+}
+.prof-val:focus { border-bottom-color: var(--accent); }
+.prof-label { display: none; }
+body.editing .prof-label { display: inline; font-size: 9px; color: var(--muted); }
+/* Signed total badge on the right — always visible */
+.skill-badge {
+  font-size: 14px; font-weight: 700; color: var(--text);
+  background: var(--border); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 1px 7px; min-width: 38px;
+  text-align: center; flex-shrink: 0; transition: all var(--transition); line-height: 1.6;
+}
+.roll-result { display: none; }
+.roll-btn { display: none; }
+.hide { display: none !important; }
+
+/* ══════════════════════════════════════════
+   ABILITY WIDGET
+   ══════════════════════════════════════════ */
+.ability-widget-shell { min-height: 80px; }
+.ability-widget-placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 28px 16px; border: 1px dashed var(--border2);
+  border-radius: var(--radius); text-align: center; color: var(--muted);
+}
+.awp-icon { font-size: 22px; opacity: 0.4; }
+.awp-text { font-size: 12px; line-height: 1.6; }
+
+/* ══════════════════════════════════════════
+   INVENTORY
+   ══════════════════════════════════════════ */
+.inv-header { display: grid; grid-template-columns: 1fr 56px 22px; gap: 6px; margin-bottom: 4px; }
+.inv-row    { display: grid; grid-template-columns: 1fr 56px 22px; gap: 6px; margin-bottom: 5px; align-items: center; }
+.inv-row input {
+  background: var(--input); border: 1px solid var(--border2); color: var(--text);
+  padding: 4px 7px; font-size: 12px; border-radius: var(--radius); width: 100%; outline: none;
+}
+.inv-row input:focus { border-color: var(--accent); }
+.col-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; }
+.rm-btn {
+  background: none; border: 1px solid var(--border2); color: var(--muted);
+  cursor: pointer; border-radius: var(--radius); font-size: 11px;
+  width: 22px; height: 26px; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.rm-btn:hover { border-color: var(--red); color: var(--red); }
+.add-btn {
+  width: 100%; margin-top: 5px; padding: 6px; font-size: 11px; font-weight: 600;
+  cursor: pointer; border: 1px dashed var(--border2); background: transparent;
+  color: var(--muted); border-radius: var(--radius); letter-spacing: 0.05em;
+  transition: all var(--transition);
+}
+.add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ══════════════════════════════════════════
+   TEXTAREA
+   ══════════════════════════════════════════ */
+.plain-textarea {
+  width: 100%; background: var(--input); border: 1px solid var(--border2);
+  color: var(--text); padding: 8px 10px; font-size: 13px; line-height: 1.6;
+  border-radius: var(--radius); resize: vertical; min-height: 80px; outline: none;
+}
+.plain-textarea:focus   { border-color: var(--accent); }
+.plain-textarea::placeholder { color: var(--muted); }
+
+/* ══════════════════════════════════════════
+   LORE
+   ══════════════════════════════════════════ */
+.lore-card { padding-bottom: 0; }
+.lore-toggle {
+  cursor: pointer; user-select: none; margin-bottom: 0 !important; padding-bottom: 6px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.lore-toggle::after { display: none; }
+.lore-chevron { font-size: 9px; color: var(--muted); transition: transform var(--transition); margin-left: auto; }
+.lore-chevron.open { transform: rotate(180deg); }
+.lore-body { overflow: hidden; max-height: 0; padding: 0; transition: max-height 0.3s ease, padding 0.3s ease; }
+.lore-body.open { max-height: 600px; padding: 10px 0 16px; }
+
+/* ══════════════════════════════════════════
+   NOTES
+   ══════════════════════════════════════════ */
+.notes-trigger {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--bg); background: var(--accent); border: none;
+  border-radius: 99px; padding: 8px 20px; cursor: pointer;
+  box-shadow: var(--shadow-sm); transition: opacity var(--transition);
+}
+.notes-trigger:hover { opacity: 0.85; }
+.notes-page { position: fixed; inset: 0; z-index: 300; background: var(--bg); display: none; }
+.notes-page.open { display: flex; }
+.notes-sidebar { width: 200px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--border2); display: flex; flex-direction: column; }
+.notes-sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 8px; border-bottom: 1px solid var(--border2); flex-shrink: 0; }
+.notes-sidebar-title { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.08em; }
+.notes-add-doc { background: none; border: 1px solid var(--border2); color: var(--muted); cursor: pointer; border-radius: var(--radius); font-size: 15px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: all var(--transition); }
+.notes-add-doc:hover { border-color: var(--accent); color: var(--accent); }
+.notes-doc-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+.notes-doc-item { display: flex; align-items: center; gap: 4px; padding: 7px 10px; cursor: pointer; border-left: 2px solid transparent; transition: background var(--transition), border-color var(--transition); user-select: none; }
+.notes-doc-item:hover { background: var(--panel2); }
+.notes-doc-item.active { background: var(--panel2); border-left-color: var(--accent); }
+.notes-doc-item.dragging { opacity: 0.3; }
+.notes-doc-item.drag-over { border-top: 2px solid var(--accent); }
+.notes-doc-name { flex: 1; font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notes-doc-del { background: none; border: none; color: transparent; cursor: pointer; font-size: 11px; padding: 1px 3px; border-radius: 2px; flex-shrink: 0; transition: color var(--transition); }
+.notes-doc-item:hover .notes-doc-del { color: var(--muted); }
+.notes-doc-del:hover { color: var(--red) !important; }
+.notes-doc-rename-input { font-size: 12px; background: var(--input); border: 1px solid var(--accent); color: var(--text); padding: 1px 4px; border-radius: var(--radius); width: 100%; outline: none; }
+.notes-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.notes-topbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--accent); flex-shrink: 0; }
+.notes-doc-title-wrap { flex: 1; min-width: 0; }
+.notes-title-input { font-size: 16px; font-weight: 700; background: none; border: none; color: var(--text); outline: none; width: 100%; padding: 0; }
+.notes-title-input::placeholder { color: var(--muted); }
+.notes-back { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: none; border: 1px solid var(--border2); padding: 4px 12px; border-radius: 99px; cursor: pointer; transition: all var(--transition); flex-shrink: 0; }
+.notes-back:hover { color: var(--accent); border-color: var(--accent); }
+.notes-editor { flex: 1; background: var(--input); border: none; color: var(--text); padding: 20px 24px; font-size: 14px; line-height: 1.8; resize: none; outline: none; }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .stats-grid            { grid-template-columns: 1fr; }
+  .header-grid           { grid-template-columns: 1fr; }
+  .hp-widget             { align-items: flex-start; }
+  .rolls-initiative-wrap { flex-direction: column; }
+  .side-column           { width: 100%; flex-direction: row; }
+}
+/* ══════════════════════════════════════════
+   ABILITY / ACTIONS TABS
+   ══════════════════════════════════════════ */
+.ab-tab-bar {
+  display: flex; gap: 0; margin-bottom: 14px;
+  border-bottom: 1px solid var(--border2);
+}
+.ab-tab {
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  padding: 6px 16px; cursor: pointer; color: var(--muted);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  background: none; border-top: none; border-left: none; border-right: none;
+  transition: all var(--transition);
+}
+.ab-tab:hover { color: var(--text); }
+.ab-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.ab-pane { display: none; }
+.ab-pane.active { display: block; }
+
+/* ══════════════════════════════════════════
+   ACTIONS
+   ══════════════════════════════════════════ */
+.actions-section-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--muted);
+  margin-bottom: 6px;
+}
+.actions-divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+.action-row {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 7px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 4px;
+  background: var(--panel2);
+}
+.action-row:last-child { margin-bottom: 0; }
+
+/* Default rows — dimmer, clearly locked */
+.action-row.default-row { opacity: 0.85; }
+
+.action-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; user-select: none; }
+.action-header { display: flex; align-items: center; gap: 6px; }
+.action-name-text {
+  font-size: 13px; font-weight: 600; color: var(--text); flex: 1;
+  pointer-events: none;
+}
+.action-flavor { font-size: 10px; font-style: italic; color: var(--muted); line-height: 1.4; pointer-events: none; }
+.action-notes-text { font-size: 11px; color: var(--dim); line-height: 1.5; pointer-events: none; }
+
+/* Custom rows — editable */
+.action-name {
+  background: none; border: none; color: var(--text);
+  font-family: var(--font-main); font-size: 13px; font-weight: 600;
+  padding: 0; outline: none; flex: 1;
+}
+.action-name::placeholder { color: var(--muted); font-weight: 400; }
+.action-notes {
+  background: none; border: none; color: var(--dim);
+  font-family: var(--font-main); font-size: 11px;
+  padding: 0; outline: none; width: 100%; resize: none;
+  overflow: hidden; line-height: 1.5; height: 16px;
+}
+.action-notes:focus { height: auto; min-height: 32px; }
+.action-notes::placeholder { color: var(--muted); }
+
+.action-rolls { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; align-items: flex-end; }
+.action-roll-wrap { display: flex; align-items: center; gap: 4px; }
+.action-roll-label {
+  font-size: 8px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--muted); min-width: 20px;
+}
+.action-roll-text {
+  font-size: 11px; color: var(--accent); min-width: 52px;
+  text-align: center; pointer-events: none; user-select: none;
+}
+.action-roll-input {
+  background: var(--input); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--font-main); font-size: 11px;
+  width: 62px; text-align: center; padding: 2px 5px;
+  border-radius: var(--radius); outline: none; transition: border-color var(--transition);
+}
+.action-roll-input:focus { border-color: var(--accent); }
+.action-roll-input::placeholder { color: var(--muted); }
+.action-roll-btn {
+  font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 2px 8px; border: 1px solid var(--border); background: none;
+  color: var(--muted); border-radius: 99px; cursor: pointer;
+  transition: all var(--transition); white-space: nowrap;
+}
+.action-roll-btn:hover { border-color: var(--accent); color: var(--accent); }
+.action-roll-btn:active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.action-rm {
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 11px; padding: 0;
+  line-height: 1; transition: color var(--transition); flex-shrink: 0;
+}
+.action-rm:hover { color: var(--red); }
+.action-name-text { font-family: var(--font-main); }
+.action-notes-text { font-family: var(--font-main); }
+
+/* DEATH SAVES */
+#deathSaves {
+  display: none; flex-direction: column; gap: 8px;
+  padding: 10px 14px; margin-top: 6px;
+  border: 1px solid var(--red); border-radius: var(--radius-lg);
+  background: rgba(168,50,50,0.08);
+}
+#deathSaves.on { display: flex; }
+.ds-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--red); }
+.ds-row { display: flex; align-items: center; gap: 8px; }
+.ds-label { font-size: 10px; color: var(--muted); width: 64px; text-transform: uppercase; letter-spacing: 0.08em; }
+.ds-pips { display: flex; gap: 5px; }
+.ds-pip { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--border2); cursor: pointer; transition: all 0.1s; }
+.ds-pip:hover { border-color: var(--accent); }
+.ds-pip.s.on { background: var(--green); border-color: var(--green); }
+.ds-pip.f.on { background: var(--red);   border-color: var(--red); }
+.ds-roll { margin-left: auto; font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border: 1px solid var(--red); background: none; color: var(--red); border-radius: 99px; cursor: pointer; transition: all 0.1s; }
+.ds-roll:hover { background: var(--red); color: #fff; }
+
+/* ══════════════════════════════════════════
+   ODETTE — BEACH THEME
+   ══════════════════════════════════════════ */
+body { background: linear-gradient(180deg,#071e2e 0%,#0a2a3a 40%,#0d3347 100%); }
+.card { background: rgba(14,51,71,0.88); border-color: rgba(32,118,160,0.45); box-shadow: 0 2px 20px rgba(0,80,120,0.25); }
+.card-title { font-family: var(--font-display); font-size: 13px; letter-spacing: 0.04em; color: var(--accent2); border-bottom-color: rgba(32,118,160,0.35); }
+.card-title::after { background: var(--border); }
+.char-name-input { font-family: var(--font-display); font-size: 30px; color: var(--accent); }
+.stat-col { background: rgba(10,36,52,0.9); border-color: rgba(32,118,160,0.35); }
+.stat-header { background: rgba(0,80,120,0.3); }
+.stat-name { color: var(--accent2); }
+.stat-roll-text { color: var(--accent); }
+.stat-roll-line { background: rgba(0,80,120,0.12); }
+.stat-roll-line:hover { background: rgba(224,64,160,0.08); }
+.skill-badge { background: rgba(0,80,120,0.35); border-color: rgba(32,118,160,0.4); color: var(--accent2); }
+.skill-row:hover { background: rgba(224,64,160,0.05); }
+.skill-row:hover .skill-badge { border-color: var(--accent); color: var(--accent); }
+.roll-btn { border-color: rgba(32,118,160,0.5); color: var(--muted); }
+.roll-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.level-val { color: var(--accent); }
+.init-modifier { color: var(--accent2); }
+.ab-tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+.hp-ctrl-btn.dmg { border-color: var(--accent3); color: var(--accent3); }
+.hp-ctrl-btn.heal { border-color: var(--green); color: var(--green); }
+.plain-textarea { background: rgba(8,30,43,0.8); border-color: rgba(32,118,160,0.35); }
+.plain-textarea:focus { border-color: var(--accent2); }
+.add-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.inv-row input { background: rgba(8,30,43,0.8); border-color: rgba(32,118,160,0.35); }
+.inv-row input:focus { border-color: var(--accent2); }
+.notes-trigger { background: var(--accent2); color: var(--bg); }
+#diceBtn { background: rgba(14,51,71,0.9); border-color: rgba(32,118,160,0.4); color: var(--dim); }
+#diceBtn:hover, #diceBtn.active { border-color: var(--accent2); color: var(--accent2); }
+#diceBtn.active { background: var(--accent2); color: var(--bg); }
+.dice-die { background: var(--panel2); border-color: var(--border2); color: var(--dim); }
+.dice-die:hover, .dice-die.selected { border-color: var(--accent2); color: var(--accent2); }
+.dice-die.selected { background: rgba(0,201,177,0.1); }
+.dice-roll-btn { background: var(--accent2); }
+.action-roll-text { color: var(--accent2); }
+.action-roll-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+#deathSaves { border-color: var(--accent3); background: rgba(224,85,85,0.08); }
+.ds-title { color: var(--accent3); }
+.ds-pip.f.on { background: var(--accent3); border-color: var(--accent3); }
+.ds-pip.s.on { background: var(--green); border-color: var(--green); }
+.ds-roll { border-color: var(--accent3); color: var(--accent3); }
+.ds-roll:hover { background: var(--accent3); color:#fff; }
+
+/* Wave canvas */
+#waveCanvas { position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.2; }
+.page { position:relative;z-index:1; }
+
+/* Lore */
+.odette-lore { display:flex;flex-direction:column;gap:12px;padding:4px 2px 8px; }
+.odette-lore p { font-size:13px;line-height:1.85;color:var(--dim); }
+.odette-lore em { color:var(--accent2);font-style:normal; }
 </style>
 </head>
 <body>
-<canvas id="rain-canvas"></canvas>
-<canvas id="bubble-canvas"></canvas>
-<div class="sheet">
-  <div class="header-card">
-    <div class="bubbles">
-      <div class="bubble" style="width:70px;height:70px;top:-20px;right:100px;"></div>
-      <div class="bubble" style="width:28px;height:28px;top:12px;right:65px;"></div>
-      <div class="bubble" style="width:16px;height:16px;bottom:14px;left:45px;"></div>
-      <div class="bubble" style="width:44px;height:44px;bottom:-14px;left:130px;"></div>
-    </div>
-    <div>
-      <div class="char-name">Odette</div>
-      <div class="char-meta">User: Odette &nbsp;·&nbsp; Player: Josslyn</div>
-      <div class="char-meta small">Conjuration EVO — Rainfall</div>
-    </div>
-    <div class="badge"><div class="badge-label">Level</div><div class="badge-value">01</div></div>
+
+<canvas id="waveCanvas"></canvas>
+
+<div class="page">
+
+  <!-- WARNING -->
+  <div style="text-align:center;font-size:10px;color:var(--muted);letter-spacing:0.04em;padding:2px 0 4px;">
+    Please try to roll with a real dice, these online rolls are untrustworthy and are a last resort!
   </div>
+
+  <!-- EDIT BAR -->
+  <div class="edit-bar">
+    <button class="edit-btn" id="editBtn" onclick="toggleEdit()">Edit</button>
+  </div>
+
+  <!-- HEADER -->
   <div class="card">
-    <div class="sec-label">Rolls</div>
-    <div class="rolls-grid">
-      <div class="roll-card"><div class="roll-abbr">STR</div><div class="roll-mod">d20 + 1</div><div class="roll-note">physical attacks and actions</div></div>
-      <div class="roll-card"><div class="roll-abbr">MND</div><div class="roll-mod">d20 + 3</div><div class="roll-note">intellectual and mental actions</div></div>
-      <div class="roll-card"><div class="roll-abbr">SOL</div><div class="roll-mod">d20 - 1</div><div class="roll-note">belief, instinct, willpower</div></div>
+    <div class="header-grid">
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <input class="char-name-input locked-field" id="charName" type="text" placeholder="Character Name">
+        <div class="meta-row">
+          <div class="meta-field">
+            <span class="field-label">Player</span>
+            <input class="plain-field locked-field" id="playerName" type="text" placeholder="Player Name">
+          </div>
+        </div>
+        <div class="power-line">
+          <select class="power-select locked-field" id="powerCat">
+            <option value="" disabled selected>Category</option>
+            <option>Embodiment</option>
+            <option>Conjuration</option>
+          </select>
+          <span class="power-sep">·</span>
+          <select class="power-select locked-field" id="powerType">
+            <option value="" disabled selected>Type</option>
+            <option>EVO</option>
+            <option>EGG</option>
+            <option>FIX</option>
+          </select>
+          <span class="power-sep">—</span>
+          <input class="power-field pf-name locked-field" id="abilityName" type="text" placeholder="Ability Name">
+        </div>
+      </div>
+
+      <div class="hp-widget">
+        <div class="hp-row-top">
+          <span class="hp-label">HP</span>
+          <div class="hp-display">
+            <button class="hp-ctrl-btn dmg"  onclick="adjustHp(-1)">−</button>
+            <input  class="hp-amt" type="number" id="hpAmount" value="1" min="1">
+            <button class="hp-ctrl-btn heal" onclick="adjustHp(1)">+</button>
+            <input class="hp-num locked-field" type="number" id="currentHp" placeholder="—" oninput="clampHp(); save()">
+            <span class="hp-slash">/</span>
+            <input class="hp-num locked-field" type="number" id="maxHp" placeholder="—" oninput="save()">
+            <span class="hp-flash" id="hpFlash"></span>
+          </div>
+        </div>
+        <div class="level-row">
+          <span class="level-label">LVL</span>
+          <input class="level-val locked-field" type="number" id="levelVal" placeholder="1" min="1">
+        </div>
+      </div>
+
     </div>
   </div>
+
+
+  <!-- DEATH SAVES -->
+  <div id="deathSaves">
+    <div class="ds-title">⚠ Death Saves</div>
+    <div class="ds-row">
+      <span class="ds-label">Successes</span>
+      <div class="ds-pips">
+        <div class="ds-pip s" id="ds-s-0" onclick="dsPip(this)"></div>
+        <div class="ds-pip s" id="ds-s-1" onclick="dsPip(this)"></div>
+        <div class="ds-pip s" id="ds-s-2" onclick="dsPip(this)"></div>
+      </div>
+    </div>
+    <div class="ds-row">
+      <span class="ds-label">Failures</span>
+      <div class="ds-pips">
+        <div class="ds-pip f" id="ds-f-0" onclick="dsPip(this)"></div>
+        <div class="ds-pip f" id="ds-f-1" onclick="dsPip(this)"></div>
+        <div class="ds-pip f" id="ds-f-2" onclick="dsPip(this)"></div>
+      </div>
+      <button class="ds-roll" onclick="dsRoll()">Roll Save</button>
+      <button class="ds-roll" onclick="dsClear()" style="border-color:var(--muted);color:var(--muted);margin-left:6px;">Reset</button>
+    </div>
+  </div>
+
+  <!-- STATS + SKILLS + SIDE COLUMN -->
+  <div class="rolls-initiative-wrap">
+
+    <!-- SIDE COLUMN -->
+    <div class="side-column">
+
+      <div class="card initiative-card" onclick="doInitRoll()" style="cursor:pointer;">
+        <div class="card-title" style="pointer-events:none;">Initiative</div>
+        <div class="initiative-body" style="pointer-events:none;">
+          <div class="init-modifier" id="init-formula">+0</div>
+          <div class="init-result" id="init-result"></div>
+          <div class="init-bonus-row">
+            <button class="init-adj-btn hidden-ctrl" id="initMinus" onclick="event.stopPropagation();adjustInitBonus(-1)" style="pointer-events:auto;">−</button>
+            <span class="init-bonus-val" id="initBonusDisplay"></span>
+            <button class="init-adj-btn hidden-ctrl" id="initPlus" onclick="event.stopPropagation();adjustInitBonus(1)" style="pointer-events:auto;">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card ac-card">
+        <div class="card-title">AC</div>
+        <div class="ac-body">
+          <div class="ac-derived" id="acDerived">10</div>
+          <input class="ac-override locked-field" type="number" id="acVal" placeholder="Override" oninput="updateACDisplay(); save()">
+        </div>
+      </div>
+
+      <!-- IMAGE CARD -->
+      <div class="card img-card" onclick="document.getElementById('imgInput').click()">
+        <input type="file" id="imgInput" class="img-upload-input" accept="image/*" onchange="loadImage(event)">
+        <div class="img-placeholder" id="imgPlaceholder">
+          <span class="img-placeholder-icon">🖼</span>
+          <span>Upload image</span>
+        </div>
+        <img class="img-preview" id="imgPreview" alt="Character image">
+        <div class="img-overlay" id="imgOverlay">Change image</div>
+      </div>
+
+    </div>
+
+    <!-- CORE ROLLS -->
+    <div class="card" style="flex:1;min-width:0;">
+      <div class="card-title">Core Rolls</div>
+      <div class="stats-grid">
+
+        <!-- STR — default 10 -->
+        <div class="stat-col">
+          <div class="stat-header">
+            <span class="stat-name">STR</span>
+            <div class="stat-val-wrap">
+              <input class="stat-val locked-field" type="number" id="strVal" value="10" min="1" max="30" oninput="updateStat('str'); save()">
+            </div>
+          </div>
+          <div class="stat-roll-line" onclick="doRoll('str',null)" role="button">
+            <span class="stat-roll-text" id="str-roll">d20</span>
+          </div>
+          <div class="skills-list">
+            <div class="skill-row" onclick="doRoll('str','ath')" role="button"><span class="skill-name">Athletics</span><div class="skill-mods"><span class="skill-base-mod" id="ath-mod"></span><span class="skill-sep" id="ath-sep">+</span><input class="prof-val" type="number" id="ath-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('ath','str');save()"><span class="prof-label" id="ath-label">prof</span></div><span class="skill-badge" id="ath-badge">+0</span></div>
+            <div class="skill-row" onclick="doRoll('str','itm')" role="button"><span class="skill-name">Intimidation</span><div class="skill-mods"><span class="skill-base-mod" id="itm-mod"></span><span class="skill-sep" id="itm-sep">+</span><input class="prof-val" type="number" id="itm-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('itm','str');save()"><span class="prof-label" id="itm-label">prof</span></div><span class="skill-badge" id="itm-badge">+0</span></div>
+            <div class="skill-row" onclick="doRoll('str','sur')" role="button"><span class="skill-name">Survival</span><div class="skill-mods"><span class="skill-base-mod" id="sur-mod"></span><span class="skill-sep" id="sur-sep">+</span><input class="prof-val" type="number" id="sur-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('sur','str');save()"><span class="prof-label" id="sur-label">prof</span></div><span class="skill-badge" id="sur-badge">+0</span></div>
+          </div>
+        </div>
+
+        <!-- MND — default 10 -->
+        <div class="stat-col">
+          <div class="stat-header">
+            <span class="stat-name">MND</span>
+            <div class="stat-val-wrap">
+              <input class="stat-val locked-field" type="number" id="mndVal" value="10" min="1" max="30" oninput="updateStat('mnd'); save()">
+            </div>
+          </div>
+          <div class="stat-roll-line" onclick="doRoll('mnd',null)" role="button">
+            <span class="stat-roll-text" id="mnd-roll">d20</span>
+          </div>
+          <div class="skills-list">
+            <div class="skill-row" onclick="doRoll('mnd','per')" role="button"><span class="skill-name">Perception</span><div class="skill-mods"><span class="skill-base-mod" id="per-mod"></span><span class="skill-sep" id="per-sep">+</span><input class="prof-val" type="number" id="per-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('per','mnd');save()"><span class="prof-label" id="per-label">prof</span></div><span class="skill-badge" id="per-badge">+0</span></div>
+            <div class="skill-row" onclick="doRoll('mnd','inv')" role="button"><span class="skill-name">Investigation</span><div class="skill-mods"><span class="skill-base-mod" id="inv-mod"></span><span class="skill-sep" id="inv-sep">+</span><input class="prof-val" type="number" id="inv-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('inv','mnd');save()"><span class="prof-label" id="inv-label">prof</span></div><span class="skill-badge" id="inv-badge">+0</span></div>
+            <div class="skill-row" onclick="doRoll('mnd','foc')" role="button"><span class="skill-name">Focus</span><div class="skill-mods"><span class="skill-base-mod" id="foc-mod"></span><span class="skill-sep" id="foc-sep">+</span><input class="prof-val" type="number" id="foc-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('foc','mnd');save()"><span class="prof-label" id="foc-label">prof</span></div><span class="skill-badge" id="foc-badge">+0</span></div>
+          </div>
+        </div>
+
+        <!-- SOL — default 10 -->
+        <div class="stat-col">
+          <div class="stat-header">
+            <span class="stat-name">SOL</span>
+            <div class="stat-val-wrap">
+              <input class="stat-val locked-field" type="number" id="solVal" value="10" min="1" max="30" oninput="updateStat('sol'); save()">
+            </div>
+          </div>
+          <div class="stat-roll-line" onclick="doRoll('sol',null)" role="button">
+            <span class="stat-roll-text" id="sol-roll">d20</span>
+          </div>
+          <div class="skills-list">
+            <div class="skill-row" onclick="doRoll('sol','com')" role="button"><span class="skill-name">Composure</span><div class="skill-mods"><span class="skill-base-mod" id="com-mod"></span><span class="skill-sep" id="com-sep">+</span><input class="prof-val" type="number" id="com-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('com','sol');save()"><span class="prof-label" id="com-label">prof</span></div><span class="skill-badge" id="com-badge">+0</span></div>
+            <div class="skill-row" onclick="doRoll('sol','itu')" role="button"><span class="skill-name">Intuition</span><div class="skill-mods"><span class="skill-base-mod" id="itu-mod"></span><span class="skill-sep" id="itu-sep">+</span><input class="prof-val" type="number" id="itu-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('itu','sol');save()"><span class="prof-label" id="itu-label">prof</span></div><span class="skill-badge" id="itu-badge">+0</span></div>
+            <div class="skill-row" onclick="doRoll('sol','inf')" role="button"><span class="skill-name">Influence</span><div class="skill-mods"><span class="skill-base-mod" id="inf-mod"></span><span class="skill-sep" id="inf-sep">+</span><input class="prof-val" type="number" id="inf-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('inf','sol');save()"><span class="prof-label" id="inf-label">prof</span></div><span class="skill-badge" id="inf-badge">+0</span></div>
+          </div>
+        </div>
+
+        <!-- DEF — default 10 -->
+        <div class="stat-col">
+          <div class="stat-header">
+            <span class="stat-name">DEF</span>
+            <div class="stat-val-wrap">
+              <input class="stat-val locked-field" type="number" id="defVal" value="10" min="1" max="30" oninput="updateStat('def'); updateACDisplay(); updateInitDisplay(); save()">
+            </div>
+          </div>
+          <div class="stat-roll-line" onclick="doRoll('def',null)" role="button">
+            <span class="stat-roll-text" id="def-roll">d20</span>
+          </div>
+          <div class="skills-list">
+            <div class="skill-row" onclick="doRoll('def','eva')" role="button"><span class="skill-name">Evasion</span><div class="skill-mods"><span class="skill-base-mod" id="eva-mod"></span><span class="skill-sep" id="eva-sep">+</span><input class="prof-val" type="number" id="eva-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('eva','def');save()"><span class="prof-label" id="eva-label">prof</span></div><span class="skill-badge" id="eva-badge">+0</span></div>
+            <div class="skill-row" onclick="doRoll('def','for')" role="button"><span class="skill-name">Fortitude</span><div class="skill-mods"><span class="skill-base-mod" id="for-mod"></span><span class="skill-sep" id="for-sep">+</span><input class="prof-val" type="number" id="for-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('for','def');save()"><span class="prof-label" id="for-label">prof</span></div><span class="skill-badge" id="for-badge">+0</span></div>
+            <div class="skill-row" onclick="doRoll('def','wil')" role="button"><span class="skill-name">Will</span><div class="skill-mods"><span class="skill-base-mod" id="wil-mod"></span><span class="skill-sep" id="wil-sep">+</span><input class="prof-val" type="number" id="wil-prof" placeholder="0" onclick="event.stopPropagation()" oninput="refreshZeroHidden();updateBadge('wil','def');save()"><span class="prof-label" id="wil-label">prof</span></div><span class="skill-badge" id="wil-badge">+0</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- end rolls-initiative-wrap -->
+
+
+  <!-- ABILITY + ACTIONS COMBINED -->
+  <div class="card" id="abilityCard">
+    <div class="ab-tab-bar">
+      <button class="ab-tab active" onclick="switchAbTab('ability')">Ability</button>
+      <button class="ab-tab"        onclick="switchAbTab('actions')">Actions</button>
+    </div>
+    <div class="ab-pane active" id="ab-ability">
+      <div id="abilityWidget" class="ability-widget-shell">
+        <div class="ability-widget-placeholder">
+          <span class="awp-icon">⚡</span>
+          <span class="awp-text">Ability widget goes here.<br>Each character gets a custom build for their power.</span>
+        </div>
+      </div>
+    </div>
+    <div class="ab-pane" id="ab-actions">
+
+      <!-- DEFAULT ACTIONS — hardcoded, never saved, never editable -->
+      <div class="actions-section-label">Standard Actions</div>
+      <div id="defaultActionsList"></div>
+
+      <div class="actions-divider"></div>
+
+      <!-- CUSTOM ACTIONS — player-added, editable, saved -->
+      <div class="actions-section-label">Custom Actions</div>
+      <div id="actionsList"></div>
+      <button class="add-btn" onclick="addCustomAction()">+ Add Action</button>
+    </div>
+  </div>
+
+
+  <!-- INVENTORY + CONDITIONS -->
   <div class="card">
-    <div class="sec-label">Abilities &nbsp;·&nbsp; Conjuration EVO — "Rainfall"</div>
-    <div class="abilities-grid">
-      <div class="ability">
-        <div class="ability-header"><span class="ability-tag">active</span><span class="ability-name">Water Control</span></div>
-        <div class="ability-desc">Treats water as a solid — shaping, lifting, and holding up to 5 gallons at will. Roll MND to seize it; harder with more volume. Each combat turn it stays in control costs another roll with a stacking −1 penalty.</div>
-        <div class="limits-label">Limits</div>
-        <div class="limit-item"><div class="limit-dot"></div><div class="limit-text">Max 5 gallons total. Every gallon above 1 reduces the roll modifier by 1.</div></div>
-        <div class="limit-item"><div class="limit-dot"></div><div class="limit-text">Moving it too fast = automatic drop. Failing any roll = immediate loss of control.</div></div>
-        <div class="limit-item"><div class="limit-dot"></div><div class="limit-text">Each sustained turn in combat: re-roll at cumulative −1. The longer she holds, the harder it gets.</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div class="card-title">Inventory</div>
+        <div class="inv-header">
+          <span class="col-label">Item</span>
+          <span class="col-label">Qty</span>
+          <span></span>
+        </div>
+        <div id="invList"></div>
+        <button class="add-btn" onclick="addItem()">+ Add Item</button>
       </div>
-      <div class="ability">
-        <div class="ability-header"><span class="ability-tag passive">passive</span><span class="ability-name">Weather Draw</span></div>
-        <div class="ability-desc">Passively pulls light moisture from the air around her at all times.</div>
-        <div class="limits-label">Limits</div>
-        <div class="limit-item"><div class="limit-dot"></div><div class="limit-text">Cannot create water — only interact with what's already present.</div></div>
+      <div>
+        <div class="card-title">Conditions</div>
+        <textarea class="plain-textarea" id="conditionsText" placeholder="Active conditions..." oninput="save()"></textarea>
       </div>
     </div>
   </div>
 
-  <!-- WATER CONTROL TRACKER -->
-  <div class="card" id="wc-tracker">
-    <style>
-    #wc-tracker { overflow: visible; }
 
-    /* gallon selector */
-    .wc-gallon-row {
-      display: flex;
-      gap: .45rem;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .wc-g-label {
-      font-family: var(--font-display);
-      font-size: .55rem;
-      font-weight: 700;
-      color: var(--text-dim);
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      margin-right: .2rem;
-    }
-    .wc-pip {
-      width: 36px; height: 36px;
-      border-radius: var(--radius-sm);
-      border: 1.5px solid rgba(0,212,255,.18);
-      background: var(--bg-inset);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-display);
-      font-size: .72rem;
-      font-weight: 700;
-      color: var(--text-dim);
-      cursor: pointer;
-      transition: all .18s;
-      position: relative;
-      overflow: hidden;
-    }
-    .wc-pip::before {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 0%;
-      background: rgba(0,180,230,.18);
-      transition: height .25s;
-    }
-    .wc-pip.active {
-      border-color: var(--cyan2);
-      color: var(--cyan);
-      box-shadow: 0 0 10px rgba(0,212,255,.2), inset 0 0 8px rgba(0,180,230,.08);
-    }
-    .wc-pip.active::before { height: 100%; }
-    .wc-pip:hover { border-color: var(--cyan3); color: var(--text); }
-    .wc-pip.active:hover { border-color: var(--cyan); }
-
-    /* formula display */
-    .wc-formula {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      padding: .6rem .85rem;
-      background: var(--bg-inset);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      margin-bottom: .75rem;
-      flex-wrap: wrap;
-    }
-    .wc-f-label {
-      font-family: var(--font-display);
-      font-size: .52rem;
-      font-weight: 700;
-      color: var(--text-dim);
-      letter-spacing: .14em;
-      text-transform: uppercase;
-    }
-    .wc-f-expr {
-      font-family: var(--font-display);
-      font-size: .95rem;
-      font-weight: 700;
-      color: var(--cyan);
-      text-shadow: 0 0 10px rgba(0,212,255,.35);
-      letter-spacing: .04em;
-    }
-    .wc-f-sep { color: var(--text-dim); font-size: .7rem; }
-    .wc-f-threshold {
-      font-family: var(--font-display);
-      font-size: .78rem;
-      font-weight: 700;
-      color: var(--text-mid);
-    }
-    .wc-f-threshold span { color: var(--gold); text-shadow: 0 0 8px rgba(255,201,71,.3); }
-    .wc-penalty-badge {
-      margin-left: auto;
-      font-family: var(--font-display);
-      font-size: .58rem;
-      font-weight: 700;
-      color: var(--coral);
-      background: rgba(255,107,138,.08);
-      border: 1px solid rgba(255,107,138,.2);
-      border-radius: 99px;
-      padding: .15rem .5rem;
-    }
-
-    /* turn tracker */
-    .wc-turn-row {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      margin-bottom: .75rem;
-    }
-    .wc-turn-label {
-      font-family: var(--font-display);
-      font-size: .52rem;
-      font-weight: 700;
-      color: var(--text-dim);
-      letter-spacing: .14em;
-      text-transform: uppercase;
-    }
-    .wc-turn-pips {
-      display: flex;
-      gap: .28rem;
-    }
-    .wc-turn-pip {
-      width: 18px; height: 18px;
-      border-radius: 4px;
-      border: 1px solid rgba(100,200,255,.12);
-      background: var(--bg-inset);
-      cursor: pointer;
-      transition: all .15s;
-      position: relative;
-    }
-    .wc-turn-pip.used {
-      background: rgba(255,107,138,.15);
-      border-color: rgba(255,107,138,.3);
-    }
-    .wc-turn-pip.used::after {
-      content: '−';
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: .6rem;
-      color: var(--coral);
-      font-family: var(--font-display);
-    }
-    .wc-turn-btns { display: flex; gap: .35rem; margin-left: auto; }
-    .wc-btn {
-      font-family: var(--font-display);
-      font-size: .58rem;
-      font-weight: 700;
-      padding: .25rem .65rem;
-      border-radius: 99px;
-      border: 1.5px solid;
-      cursor: pointer;
-      transition: all .15s;
-      letter-spacing: .06em;
-    }
-    .wc-btn.next-turn {
-      background: rgba(0,212,255,.08);
-      border-color: rgba(0,212,255,.25);
-      color: var(--cyan2);
-    }
-    .wc-btn.next-turn:hover { background: rgba(0,212,255,.16); }
-    .wc-btn.drop {
-      background: rgba(255,107,138,.08);
-      border-color: rgba(255,107,138,.25);
-      color: var(--coral);
-    }
-    .wc-btn.drop:hover { background: rgba(255,107,138,.16); }
-
-    /* roll result */
-    .wc-roll-area {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: .5rem;
-      align-items: center;
-    }
-    .wc-roll-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .5rem;
-      padding: .65rem 1rem;
-      background: rgba(0,180,230,.07);
-      border: 1.5px solid rgba(0,212,255,.22);
-      border-radius: var(--radius-sm);
-      font-family: var(--font-display);
-      font-size: .72rem;
-      font-weight: 700;
-      color: var(--cyan2);
-      cursor: pointer;
-      transition: all .18s;
-      letter-spacing: .06em;
-    }
-    .wc-roll-btn:hover {
-      background: rgba(0,180,230,.14);
-      border-color: var(--cyan2);
-      box-shadow: 0 0 12px rgba(0,212,255,.15);
-    }
-    .wc-roll-btn:active { transform: scale(.97); }
-    .wc-roll-icon { font-size: 1.1rem; }
-
-    .wc-result-box {
-      min-width: 110px;
-      padding: .6rem .75rem;
-      border-radius: var(--radius-sm);
-      border: 1.5px solid var(--border);
-      background: var(--bg-inset);
-      text-align: center;
-      transition: all .25s;
-    }
-    .wc-result-box.pass {
-      border-color: rgba(0,229,160,.35);
-      background: rgba(0,229,160,.06);
-      box-shadow: 0 0 14px rgba(0,229,160,.1);
-    }
-    .wc-result-box.fail {
-      border-color: rgba(255,107,138,.35);
-      background: rgba(255,107,138,.06);
-      box-shadow: 0 0 14px rgba(255,107,138,.1);
-    }
-    .wc-result-num {
-      font-family: var(--font-display);
-      font-size: 1.5rem;
-      font-weight: 700;
-      line-height: 1;
-      color: var(--text-dim);
-      transition: color .25s;
-    }
-    .wc-result-box.pass .wc-result-num { color: var(--mint); text-shadow: 0 0 12px rgba(0,229,160,.4); }
-    .wc-result-box.fail .wc-result-num { color: var(--coral); text-shadow: 0 0 12px rgba(255,107,138,.4); }
-    .wc-result-label {
-      font-family: var(--font-display);
-      font-size: .5rem;
-      font-weight: 700;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin-top: .2rem;
-      transition: color .25s;
-    }
-    .wc-result-box.pass .wc-result-label { color: var(--mint); }
-    .wc-result-box.fail .wc-result-label { color: var(--coral); }
-
-    .wc-result-detail {
-      font-family: var(--font-display);
-      font-size: .55rem;
-      color: var(--text-dim);
-      margin-top: .55rem;
-      line-height: 1.65;
-      min-height: 1.2rem;
-    }
-    .wc-result-detail b { color: var(--text-mid); }
-
-    /* holding indicator */
-    .wc-holding {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      margin-top: .65rem;
-      padding: .45rem .7rem;
-      border-radius: var(--radius-sm);
-      background: rgba(0,180,230,.05);
-      border: 1px solid var(--border);
-      font-family: var(--font-display);
-      font-size: .56rem;
-      font-weight: 700;
-      color: var(--text-dim);
-      letter-spacing: .08em;
-    }
-    .wc-holding.active-hold {
-      background: rgba(0,180,230,.1);
-      border-color: rgba(0,212,255,.25);
-      color: var(--cyan2);
-    }
-    .wc-holding-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--text-dim);
-      flex-shrink: 0;
-    }
-    .wc-holding.active-hold .wc-holding-dot {
-      background: var(--cyan);
-      box-shadow: 0 0 6px var(--cyan);
-      animation: wc-pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes wc-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-    </style>
-
-    <div class="sec-label">Water Control — Combat Tracker</div>
-
-    <!-- GALLON SELECTOR -->
-    <div class="wc-gallon-row">
-      <span class="wc-g-label">gallons</span>
-      <div class="wc-pip" id="wc-g1" onclick="wc.setGallons(1)">1</div>
-      <div class="wc-pip" id="wc-g2" onclick="wc.setGallons(2)">2</div>
-      <div class="wc-pip" id="wc-g3" onclick="wc.setGallons(3)">3</div>
-      <div class="wc-pip" id="wc-g4" onclick="wc.setGallons(4)">4</div>
-      <div class="wc-pip" id="wc-g5" onclick="wc.setGallons(5)">5</div>
+  <!-- LORE -->
+  <div class="card lore-card">
+    <div class="card-title lore-toggle" onclick="toggleLore()">
+      Lore <span class="lore-chevron" id="loreChevron">▼</span>
     </div>
-
-    <!-- FORMULA -->
-    <div class="wc-formula">
-      <span class="wc-f-label">roll</span>
-      <span class="wc-f-expr" id="wc-expr">d20 + 3</span>
-      <span class="wc-f-sep">·</span>
-      <span class="wc-f-threshold">need <span id="wc-need">5</span>+</span>
-      <span class="wc-penalty-badge" id="wc-pen-badge" style="display:none">turn penalty: −<span id="wc-pen-val">0</span></span>
-    </div>
-
-    <!-- TURN TRACKER -->
-    <div class="wc-turn-row">
-      <span class="wc-turn-label">hold turns</span>
-      <div class="wc-turn-pips" id="wc-turn-pips">
-        <!-- rendered by JS -->
+    <div class="lore-body" id="loreBody">
+      <div class="odette-lore">
+        <p>Odette was never found — she was delivered, or so she was told. Abandoned as a baby, the cult took her in and decided immediately that God had sent her to them. Her ability made the story easy to sell. She was raised quiet and obedient, trained to serve, and eventually made their priestess. She has killed people in that role. More than she can make peace with.</p>
+        <p>The cult wears black to mourn the world they believe is dying. Their highest honor is death — a public ritual killing that means you have earned heaven. The leaders have not died yet because they claim it is their sacred duty to send others first. Odette believed all of it. Then she started pulling on threads.</p>
+        <p>What she found was that her mother had tried to leave when Odette was born, and they killed her for it. The story of the abandoned baby was a cover. The whole system was a lie built to keep people compliant and the powerful comfortable. She ran. She tells herself she was a coward for not exposing it. She is probably right, and she knows it.</p>
+        <p>Now she dresses in as much color as she can find — a deliberate contrast to the black she wore her whole life, and a practical disguise. She is relentlessly optimistic in a way that reads almost wrong given everything, but it comes from fear: she has <em>no idea</em> what happens after death, and that terrifies her more than anything the apocalypse can throw at her.</p>
       </div>
-      <div class="wc-turn-btns">
-        <button class="wc-btn next-turn" onclick="wc.nextTurn()">+ Turn</button>
-        <button class="wc-btn drop" onclick="wc.drop()">Drop</button>
-      </div>
-    </div>
-
-    <!-- ROLL -->
-    <div class="wc-roll-area">
-      <button class="wc-roll-btn" onclick="wc.roll()">
-        <span class="wc-roll-icon">🎲</span>
-        Roll Water Control
-      </button>
-      <div class="wc-result-box" id="wc-result-box">
-        <div class="wc-result-num" id="wc-result-num">—</div>
-        <div class="wc-result-label" id="wc-result-label">ready</div>
-      </div>
-    </div>
-
-    <div class="wc-result-detail" id="wc-result-detail"></div>
-
-    <!-- HOLDING STATUS -->
-    <div class="wc-holding" id="wc-holding">
-      <div class="wc-holding-dot"></div>
-      <span id="wc-holding-text">not holding — select gallons and roll to begin</span>
     </div>
   </div>
 
-  <div class="card">
-    <div class="sec-label">Lore</div>
-    <div class="lore-block">
-
-      <!-- characteristics -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.28rem 2rem;padding-bottom:.9rem;border-bottom:1px solid var(--border2);">
-        <div style="display:flex;gap:.5rem;align-items:baseline;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">pronouns</span><span style="font-size:.65rem;color:var(--text-mid);">she / her</span></div>
-        <div style="display:flex;gap:.5rem;align-items:baseline;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">age</span><span style="font-size:.65rem;color:var(--text-mid);">~19–20</span></div>
-        <div style="display:flex;gap:.5rem;align-items:baseline;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">clothes</span><span style="font-size:.65rem;color:var(--text-mid);">maximum color, always — deliberate contrast to the black she wore her whole life</span></div>
-        <div style="display:flex;gap:.5rem;align-items:baseline;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">origin</span><span style="font-size:.65rem;color:var(--text-mid);">cult-raised from birth · former priestess</span></div>
-        <div style="display:flex;gap:.5rem;align-items:baseline;grid-column:1/-1;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">personality</span><span style="font-size:.65rem;color:var(--text-mid);">relentlessly optimistic out of terror · afraid of what comes after death · still afraid she was wrong to leave · carries guilt she won't name</span></div>
-        <div style="display:flex;gap:.5rem;align-items:baseline;grid-column:1/-1;"><span style="font-family:var(--font-display);font-size:.52rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;">likes / dislikes</span><span style="font-size:.65rem;color:var(--text-dim);font-style:italic;">— not yet established</span></div>
-      </div>
-
-      <div class="lore-text">Odette was never found — she was delivered, or so she was told. Abandoned as a baby, the cult took her in and decided immediately that God had sent her to them. Her ability made the story easy to sell. She was raised quiet and obedient, trained to serve, and eventually made their <em>priestess</em>. She has killed people in that role. More than she can make peace with.</div>
-      <div class="lore-text">The cult wears black to mourn the world they believe is dying. Their highest honor is death — a public ritual killing that means you've earned heaven. The leaders haven't died yet because they claim it's their sacred duty to send others first. Odette believed all of it. Then she started pulling on threads.</div>
-      <div class="lore-text">What she found was that her mother had tried to leave when Odette was born — and they killed her for it. The story of the abandoned baby was a cover. The whole system was a lie built to keep people compliant and the powerful comfortable. She ran. She tells herself she was a coward for not exposing it. She's probably right, and she knows it.</div>
-      <div class="lore-text">Now she dresses in as much color as she can find — a deliberate contrast to the black she wore her whole life, and a practical disguise. She is relentlessly optimistic in a way that reads almost wrong given everything, but it comes from fear: she has <em>no idea</em> what happens after death, and that terrifies her more than anything the apocalypse can throw at her.</div>
-    </div>
-  </div>
-  <div class="footer">stats update on level up only<span></span>post-collapse 2004<span></span>conjuration evo</div>
 </div>
+
+<!-- NOTES -->
+<button class="notes-trigger" onclick="toggleNotes()">Notes</button>
+<div class="notes-page" id="notesPage">
+  <div class="notes-sidebar">
+    <div class="notes-sidebar-header">
+      <span class="notes-sidebar-title">Notes</span>
+      <button class="notes-add-doc" onclick="addDoc()">+</button>
+    </div>
+    <div class="notes-doc-list" id="notesDocList"></div>
+  </div>
+  <div class="notes-main">
+    <div class="notes-topbar">
+      <div class="notes-doc-title-wrap" id="notesTitleWrap"></div>
+      <button class="notes-back" onclick="toggleNotes()">← Back</button>
+    </div>
+    <textarea class="notes-editor" id="notesEditor" placeholder="Start writing..."></textarea>
+  </div>
+</div>
+
 <script>
-// ═══════════════════════════════════════
-// WATER CONTROL TRACKER
-// ═══════════════════════════════════════
-const wc = (() => {
-  const MND      = 3;
-  const THRESHOLDS = { 1:5, 2:7, 3:10, 4:12, 5:15 };
-  const MAX_TURNS  = 8;
+// ── ODETTE DEFAULTS (edit here to change base stats) ──
+const CHAR_DEFAULTS = {
+  name:        'Odette',
+  player:      'Josslyn',
+  str:         11,
+  mnd:         15,
+  sol:         9,
+  def:         10,
+  hp:          10,
+  hpMax:       10,
+  level:       1,
+  powerCat:    'Conjuration',
+  powerType:   'EVO',
+  abilityName: 'Rainfall',
+};
 
-  let gallons  = 1;
-  let holdTurn = 0;   // 0 = not holding, 1+ = turns held so far
-  let lastRoll = null;
+const SAVE_KEY = 'odette_sheet_v1';
 
-  // formula: d20 + (MND - (G-1)) - turnPenalty
-  // turnPenalty = max(0, holdTurn - 1) — penalty starts from 2nd turn
-  function getModifier() { return MND - (gallons - 1); }
-  function getTurnPenalty() { return holdTurn > 0 ? holdTurn - 1 : 0; }
-  function getEffectiveMod() { return getModifier() - getTurnPenalty(); }
-  function getThreshold() { return THRESHOLDS[gallons]; }
-
-  function fmtMod(m) {
-    if (m > 0) return `d20 + ${m}`;
-    if (m < 0) return `d20 − ${Math.abs(m)}`;
-    return 'd20';
-  }
-
-  function updateFormula() {
-    const mod  = getModifier();
-    const pen  = getTurnPenalty();
-    const eff  = getEffectiveMod();
-    const need = getThreshold();
-
-    document.getElementById('wc-expr').textContent = fmtMod(eff);
-    document.getElementById('wc-need').textContent = need;
-
-    const penBadge = document.getElementById('wc-pen-badge');
-    if (pen > 0) {
-      document.getElementById('wc-pen-val').textContent = pen;
-      penBadge.style.display = '';
-    } else {
-      penBadge.style.display = 'none';
-    }
-  }
-
-  function updateGallonPips() {
-    for (let g = 1; g <= 5; g++) {
-      const el = document.getElementById('wc-g' + g);
-      el.classList.toggle('active', g <= gallons);
-    }
-  }
-
-  function updateTurnPips() {
-    const wrap = document.getElementById('wc-turn-pips');
-    wrap.innerHTML = '';
-    for (let t = 0; t < MAX_TURNS; t++) {
-      const pip = document.createElement('div');
-      pip.className = 'wc-turn-pip' + (t < holdTurn ? ' used' : '');
-      pip.title = `Turn ${t + 1}${t < holdTurn ? ' (held, −' + t + ' penalty)' : ''}`;
-      wrap.appendChild(pip);
-    }
-  }
-
-  function updateHolding() {
-    const el     = document.getElementById('wc-holding');
-    const textEl = document.getElementById('wc-holding-text');
-    if (holdTurn === 0) {
-      el.classList.remove('active-hold');
-      textEl.textContent = 'not holding — select gallons and roll to begin';
-    } else {
-      el.classList.add('active-hold');
-      const pen = getTurnPenalty();
-      textEl.textContent = `holding ${gallons}G · turn ${holdTurn} · cumulative penalty: −${pen} · next roll: ${fmtMod(getEffectiveMod())} vs ${getThreshold()}+`;
-    }
-  }
-
-  function renderAll() {
-    updateGallonPips();
-    updateFormula();
-    updateTurnPips();
-    updateHolding();
-  }
-
-  function setGallons(g) {
-    gallons = g;
-    renderAll();
-  }
-
-  function roll() {
-    const d20   = Math.floor(Math.random() * 20) + 1;
-    const eff   = getEffectiveMod();
-    const total = d20 + eff;
-    const need  = getThreshold();
-    const pass  = total >= need;
-    const crit  = d20 === 20;
-    const fumble= d20 === 1;
-
-    lastRoll = { d20, eff, total, pass, crit, fumble };
-
-    const box    = document.getElementById('wc-result-box');
-    const numEl  = document.getElementById('wc-result-num');
-    const lblEl  = document.getElementById('wc-result-label');
-    const detEl  = document.getElementById('wc-result-detail');
-
-    box.className = 'wc-result-box ' + (pass ? 'pass' : 'fail');
-    numEl.textContent = total;
-
-    if (crit)        lblEl.textContent = 'NAT 20';
-    else if (fumble) lblEl.textContent = 'NAT 1';
-    else if (pass)   lblEl.textContent = 'HOLD';
-    else             lblEl.textContent = 'DROPPED';
-
-    const modStr = eff >= 0 ? `+${eff}` : `${eff}`;
-    let detail = `d20(${d20}) ${modStr} = ${total} vs ${need}+ `;
-    if (crit)          detail += '— <b>critical</b>, control locked this turn';
-    else if (fumble)   detail += '— <b>fumble</b>, water drops immediately';
-    else if (!pass)    detail += `— failed by ${need - total}, water drops`;
-    else {
-      const margin = total - need;
-      detail += `— passed by ${margin}`;
-      if (holdTurn === 0) detail += ', water seized';
-      else detail += `, hold continues`;
-    }
-    detEl.innerHTML = detail;
-
-    // state update
-    if (pass && !fumble) {
-      holdTurn = Math.max(1, holdTurn + 1);
-    } else {
-      // fail = drop
-      holdTurn = 0;
-    }
-
-    renderAll();
-  }
-
-  function nextTurn() {
-    // advance without rolling — just tick the turn counter for tracking
-    if (holdTurn > 0) {
-      holdTurn++;
-      if (holdTurn > MAX_TURNS) holdTurn = MAX_TURNS;
-    }
-    renderAll();
-  }
-
-  function drop() {
-    holdTurn = 0;
-    lastRoll = null;
-    const box   = document.getElementById('wc-result-box');
-    const numEl = document.getElementById('wc-result-num');
-    const lblEl = document.getElementById('wc-result-label');
-    const detEl = document.getElementById('wc-result-detail');
-    box.className  = 'wc-result-box';
-    numEl.textContent = '—';
-    lblEl.textContent = 'dropped';
-    detEl.textContent = '';
-    renderAll();
-  }
-
-  renderAll();
-  return { setGallons, roll, nextTurn, drop };
-})();
-const rain = document.getElementById('rain-canvas');
-const rctx = rain.getContext('2d');
-const bub = document.getElementById('bubble-canvas');
-const bctx = bub.getContext('2d');
-let W, H;
-function resize() {
-  W = rain.width = bub.width = window.innerWidth;
-  H = rain.height = bub.height = window.innerHeight;
-}
-resize(); window.addEventListener('resize', () => { resize(); initDrops(); initBubbles(); });
-
-// Rain drops
-class Drop {
-  reset(initial) {
-    this.x = Math.random() * W;
-    this.y = initial ? Math.random() * H : -20;
-    this.len = Math.random() * 18 + 8;
-    this.speed = Math.random() * 4 + 6;
-    this.alpha = Math.random() * .18 + .06;
-    this.width = Math.random() < .3 ? 1.5 : 1;
-  }
-  constructor() { this.reset(true); }
-  update() { this.y += this.speed; if (this.y > H + 20) this.reset(false); }
-  draw() {
-    rctx.save();
-    rctx.strokeStyle = `rgba(0,180,230,${this.alpha})`;
-    rctx.lineWidth = this.width;
-    rctx.shadowColor = 'rgba(0,212,255,.3)';
-    rctx.shadowBlur = 3;
-    rctx.beginPath();
-    rctx.moveTo(this.x, this.y);
-    rctx.lineTo(this.x - this.len * .1, this.y + this.len);
-    rctx.stroke();
-    rctx.restore();
-  }
+// ══════════════════════════════════════════
+// ABILITY / ACTIONS TABS
+// ══════════════════════════════════════════
+function switchAbTab(tab) {
+  document.querySelectorAll('.ab-tab').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'ability') || (i === 1 && tab === 'actions'));
+  });
+  document.getElementById('ab-ability').classList.toggle('active', tab === 'ability');
+  document.getElementById('ab-actions').classList.toggle('active', tab === 'actions');
 }
 
-class Splash {
-  constructor(x, y) {
-    this.x = x; this.y = y;
-    this.particles = Array.from({length: 4}, () => ({
-      vx: (Math.random() - .5) * 2.5,
-      vy: -(Math.random() * 2 + 1),
-      life: 1, r: Math.random() * 1.5 + .5
-    }));
-  }
-  update() { this.particles.forEach(p => { p.x = (p.x||this.x) + p.vx; p.y = (p.y||this.y) + p.vy; p.vy += .12; p.life -= .06; }); }
-  dead() { return this.particles.every(p => p.life <= 0); }
-  draw() {
-    this.particles.forEach(p => {
-      if (p.life <= 0) return;
-      rctx.beginPath();
-      rctx.arc(p.x||this.x, p.y||this.y, p.r, 0, Math.PI*2);
-      rctx.fillStyle = `rgba(0,212,255,${p.life * .4})`;
-      rctx.fill();
+// ══════════════════════════════════════════
+// EDIT MODE
+// locked-field inputs are pointer-events:none when not editing
+// body.editing enables them via CSS
+// ══════════════════════════════════════════
+let editMode = false;
+
+function toggleEdit() {
+  editMode = !editMode;
+  const btn = document.getElementById('editBtn');
+  btn.textContent = editMode ? 'Done' : 'Edit';
+  btn.classList.toggle('active', editMode);
+  document.body.classList.toggle('editing', editMode);
+
+  // Initiative bonus buttons follow edit mode
+  document.querySelectorAll('.init-adj-btn').forEach(b => {
+    b.classList.toggle('hidden-ctrl', !editMode);
+  });
+
+  if (!editMode) save();
+  refreshZeroHidden();
+}
+
+// ══════════════════════════════════════════
+// SAVE / LOAD  (localStorage)
+// ══════════════════════════════════════════
+function save() {
+  const profs = {};
+  ['ath','itm','sur','per','inv','foc','com','itu','inf','eva','for','wil'].forEach(sk => {
+    const el = document.getElementById(sk + '-prof');
+    if (el) profs[sk] = el.value;
+  });
+
+  const items = [];
+  document.querySelectorAll('#invList .inv-row').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    items.push({ name: inputs[0].value, qty: inputs[1].value });
+  });
+
+  const data = {
+    charName:    document.getElementById('charName').value,
+    playerName:  document.getElementById('playerName').value,
+    powerCat:    document.getElementById('powerCat').value,
+    powerType:   document.getElementById('powerType').value,
+    abilityName: document.getElementById('abilityName').value,
+    currentHp:   document.getElementById('currentHp').value,
+    maxHp:       document.getElementById('maxHp').value,
+    level:       document.getElementById('levelVal').value,
+    ac:          document.getElementById('acVal').value,
+    str: document.getElementById('strVal').value,
+    mnd: document.getElementById('mndVal').value,
+    sol: document.getElementById('solVal').value,
+    def: document.getElementById('defVal').value,
+    initBonus,
+    profs,
+    items,
+    conditions:  document.getElementById('conditionsText').value,
+    loreOpen:    document.getElementById('loreBody').classList.contains('open'),
+    image:       localStorage.getItem(SAVE_KEY + '_img') || null,
+  };
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function load() {
+  let data;
+  try { data = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch(e) {}
+  if (!data) { data = {}; }
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.value = val; };
+  set('charName',    CHAR_DEFAULTS.name);
+  set('playerName',  CHAR_DEFAULTS.player);
+  set('abilityName', CHAR_DEFAULTS.abilityName);
+  set('strVal',      CHAR_DEFAULTS.str);
+  set('mndVal',      CHAR_DEFAULTS.mnd);
+  set('solVal',      CHAR_DEFAULTS.sol);
+  set('defVal',      CHAR_DEFAULTS.def);
+  set('levelVal',    CHAR_DEFAULTS.level);
+  const cat = document.getElementById('powerCat');
+  const typ = document.getElementById('powerType');
+  if (cat) [...cat.options].forEach(o => { o.selected = o.value === CHAR_DEFAULTS.powerCat; });
+  if (typ) [...typ.options].forEach(o => { o.selected = o.value === CHAR_DEFAULTS.powerType; });
+  set('currentHp',      data?.currentHp ?? CHAR_DEFAULTS.hp);
+  set('maxHp',          data?.hpMax     ?? CHAR_DEFAULTS.hpMax);
+  set('acVal',          data?.ac);
+  set('conditionsText', data?.conditions);
+
+
+
+  if (data.profs) {
+    Object.entries(data.profs).forEach(([sk, val]) => {
+      const el = document.getElementById(sk + '-prof');
+      if (el) el.value = val;
     });
   }
+
+  if (data.items && data.items.length) {
+    data.items.forEach(item => addItem(item.name, item.qty));
+  }
+
+  if (data.loreOpen) {
+    document.getElementById('loreBody').classList.add('open');
+    document.getElementById('loreChevron').classList.add('open');
+  }
+
+  if (data.initBonus !== undefined) {
+    initBonus = data.initBonus;
+    updateInitDisplay();
+  }
+
+  // restore image
+  const savedImg = localStorage.getItem(SAVE_KEY + '_img');
+  if (savedImg) showImage(savedImg);
+
+  ['str','mnd','sol','def'].forEach(s => updateStat(s));
+  updateACDisplay();
+  updateInitDisplay();
+  refreshZeroHidden();
 }
 
-let drops = [], splashes = [];
-function initDrops() { drops = Array.from({length: Math.min(80, W/14)}, () => new Drop()); }
-initDrops();
+// ══════════════════════════════════════════
+// ZERO-HIDING
+// Hides any skill mod, prof, sep, and label
+// that are zero when not in edit mode.
+// ══════════════════════════════════════════
+const ALL_SKILLS = ['ath','itm','sur','per','inv','foc','com','itu','inf','eva','for','wil'];
+const SKILL_STAT = {
+  ath:'str', itm:'str', sur:'str',
+  per:'mnd', inv:'mnd', foc:'mnd',
+  com:'sol', itu:'sol', inf:'sol',
+  eva:'def', for:'def', wil:'def'
+};
 
-// Bubbles
-class Bubble {
-  reset(initial) {
-    this.x = Math.random() * W;
-    this.y = initial ? Math.random() * H : H + 30;
-    this.r = Math.random() * 12 + 4;
-    this.vx = (Math.random() - .5) * .4;
-    this.vy = -(Math.random() * .6 + .2);
-    this.life = 0; this.maxLife = Math.random() * 500 + 300;
-    this.wobble = Math.random() * Math.PI * 2;
-  }
-  constructor() { this.reset(true); }
-  update() {
-    this.wobble += .03;
-    this.x += this.vx + Math.sin(this.wobble) * .3;
-    this.y += this.vy;
-    this.life++;
-    if (this.life > this.maxLife || this.y < -30) this.reset(false);
-  }
-  draw() {
-    const t = this.life / this.maxLife;
-    const a = t < .2 ? t/.2 : t > .8 ? (1-t)/.2 : 1;
-    bctx.save();
-    bctx.beginPath();
-    bctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
-    bctx.strokeStyle = `rgba(0,200,240,${a * .25})`;
-    bctx.lineWidth = 1;
-    // shine
-    const g = bctx.createRadialGradient(this.x - this.r*.3, this.y - this.r*.3, 0, this.x, this.y, this.r);
-    g.addColorStop(0, `rgba(255,255,255,${a*.08})`);
-    g.addColorStop(1, `rgba(0,180,220,${a*.03})`);
-    bctx.fillStyle = g;
-    bctx.fill(); bctx.stroke();
-    bctx.restore();
-  }
+function updateBadge(sk, stat) {
+  const badge  = document.getElementById(sk + '-badge');
+  if (!badge) return;
+  const mod    = getStatMod(stat);
+  const prof   = parseInt(document.getElementById(sk + '-prof')?.value) || 0;
+  const total  = mod + prof;
+  badge.textContent = total >= 0 ? `+${total}` : `${total}`;
+  badge.style.color = total > 0 ? 'var(--accent)' : total < 0 ? 'var(--red)' : 'var(--text)';
 }
 
-let bubbles = [];
-function initBubbles() { bubbles = Array.from({length: 25}, () => new Bubble()); }
-initBubbles();
+function refreshZeroHidden() {
+  ALL_SKILLS.forEach(sk => {
+    const modEl   = document.getElementById(sk + '-mod');
+    const profEl  = document.getElementById(sk + '-prof');
+    const sepEl   = document.getElementById(sk + '-sep');
+    const labelEl = document.getElementById(sk + '-label');
+    if (!modEl || !profEl) return;
 
-function frame() {
-  rctx.clearRect(0, 0, W, H);
-  drops.forEach(d => { d.update(); d.draw(); if (d.y > H - 5 && Math.random() < .04) splashes.push(new Splash(d.x, H)); });
-  splashes.forEach(s => { s.update(); s.draw(); });
-  splashes = splashes.filter(s => !s.dead());
-  bctx.clearRect(0, 0, W, H);
-  bubbles.forEach(b => { b.update(); b.draw(); });
-  requestAnimationFrame(frame);
+    const stat    = SKILL_STAT[sk];
+    const mod     = getStatMod(stat);
+    const prof    = parseInt(profEl.value) || 0;
+    const modZero  = mod === 0;
+    const profZero = prof === 0;
+
+    modEl.classList.toggle('hide',   modZero  && !editMode);
+    profEl.classList.toggle('hide',  profZero && !editMode);
+    if (sepEl)   sepEl.classList.toggle('hide',   (modZero && profZero) && !editMode);
+    if (labelEl) labelEl.classList.toggle('hide',  profZero && !editMode);
+    modEl.textContent = modZero ? '' : (mod > 0 ? `+${mod}` : `${mod}`);
+
+    updateBadge(sk, stat);
+  });
 }
-frame();
+const STAT_SKILLS = {
+  str: ['ath','itm','sur'],
+  mnd: ['per','inv','foc'],
+  sol: ['com','itu','inf'],
+  def: ['eva','for','wil']
+};
+
+function getStatMod(statKey) {
+  const val = parseInt(document.getElementById(statKey + 'Val').value) || 10;
+  return Math.floor((val - 10) / 2);
+}
+
+function updateStat(stat) {
+  const mod  = getStatMod(stat);
+  const sign = mod >= 0 ? '+' : '−';
+  const abs  = Math.abs(mod);
+  const rollEl = document.getElementById(stat + '-roll');
+  rollEl.textContent = mod === 0 ? 'd20' : `d20 ${sign} ${abs}`;
+  STAT_SKILLS[stat].forEach(sk => {
+    const el = document.getElementById(sk + '-mod');
+    el.textContent = mod === 0 ? '' : (mod > 0 ? `+${mod}` : `${mod}`);
+  });
+  refreshZeroHidden();
+  refreshDefaultActions();
+}
+
+// ══════════════════════════════════════════
+// FAIR RNG — uses crypto.getRandomValues
+// Same method as Roll20, D&D Beyond, etc.
+// Rejection sampling ensures perfect uniform
+// distribution with zero modulo bias.
+// ══════════════════════════════════════════
+function rollD20() {
+  // Rejection sampling: only accept values in [0, floor(0xFFFFFFFF/20)*20)
+  // This eliminates modulo bias entirely.
+  const max = Math.floor(0xFFFFFFFF / 20) * 20;
+  const buf = new Uint32Array(1);
+  let val;
+  do { crypto.getRandomValues(buf); val = buf[0]; } while (val >= max);
+  return (val % 20) + 1;
+}
+
+// ══════════════════════════════════════════
+// TOAST STACK — stacking slide-up notifications
+// ══════════════════════════════════════════
+function showToast(rolled, total, label) {
+  const stack  = document.getElementById('toastStack');
+  if (!stack) return;
+  const isCrit = rolled === 20;
+  const isFail = rolled === 1;
+  const hasModifier = rolled !== total;
+
+  const item = document.createElement('div');
+  item.className = 'toast-item';
+  item.innerHTML = `
+    <div class="toast-info">
+      <div class="toast-total-row">
+        <span class="toast-total${isCrit?' crit':isFail?' fail':''}">${total}</span>
+        ${hasModifier ? `<span class="toast-rolled">(${rolled})</span>` : ''}
+      </div>
+      <span class="toast-label" style="color:${isCrit?'#f0c040':isFail?'var(--red)':''}">${isCrit?'✦ Nat 20':isFail?'✦ Nat 1':label}</span>
+    </div>`;
+
+  stack.appendChild(item);
+
+  // Cap at 6 — remove oldest if over
+  const items = stack.querySelectorAll('.toast-item');
+  if (items.length > 6) {
+    const oldest = items[0];
+    oldest.classList.add('hide');
+    oldest.addEventListener('transitionend', () => oldest.remove(), { once: true });
+  }
+
+  requestAnimationFrame(() => { requestAnimationFrame(() => item.classList.add('show')); });
+
+  setTimeout(() => {
+    item.classList.add('hide');
+    item.addEventListener('transitionend', () => item.remove(), { once: true });
+  }, 15000);
+}
+
+// ══════════════════════════════════════════
+// DICE ROLLER
+// ══════════════════════════════════════════
+const diceCounts = { d20:0, d12:0, d10:0, d8:0, d6:0, d4:0, d100:0 };
+const diceSides  = { d20:20, d12:12, d10:10, d8:8, d6:6, d4:4, d100:100 };
+
+function fairDie(sides) {
+  const max = Math.floor(0xFFFFFFFF / sides) * sides;
+  const buf = new Uint32Array(1);
+  let v; do { crypto.getRandomValues(buf); v = buf[0]; } while (v >= max);
+  return (v % sides) + 1;
+}
+
+function toggleDicePanel() {
+  const panel = document.getElementById('dicePanel');
+  const btn   = document.getElementById('diceBtn');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active', panel.classList.contains('open'));
+}
+
+function selectDie(key, sides) {
+  diceCounts[key]++;
+  const cnt = document.getElementById('cnt-' + key);
+  const die = document.getElementById('die-' + key);
+  cnt.textContent = diceCounts[key] > 1 ? diceCounts[key] : '';
+  cnt.classList.toggle('visible', diceCounts[key] > 1);
+  die.classList.add('selected');
+}
+
+function resetDice() {
+  Object.keys(diceCounts).forEach(k => {
+    diceCounts[k] = 0;
+    const cnt = document.getElementById('cnt-' + k);
+    const die = document.getElementById('die-' + k);
+    if (cnt) { cnt.textContent = '0'; cnt.classList.remove('visible'); }
+    if (die)   die.classList.remove('selected');
+  });
+}
+
+function rollDice() {
+  const rolls = [];
+  const parts = [];
+  Object.entries(diceCounts).forEach(([key, count]) => {
+    if (!count) return;
+    const sides = diceSides[key];
+    for (let i = 0; i < count; i++) {
+      const r = fairDie(sides);
+      rolls.push(r);
+      parts.push(`${key}:${r}`);
+    }
+  });
+  if (!rolls.length) return;
+
+  const total = rolls.reduce((a, b) => a + b, 0);
+  // show the sum as "total" and first roll as the displayed die face
+  const label = parts.join(' + ');
+  // For a single die, show the result; for multi show sum
+  const displayed = rolls.length === 1 ? rolls[0] : total;
+  showToast(rolls[0], total, label);
+  resetDice();
+  // close panel after rolling
+  document.getElementById('dicePanel').classList.remove('open');
+  document.getElementById('diceBtn').classList.remove('active');
+}
+
+// ══════════════════════════════════════════
+// ROLLS
+// ══════════════════════════════════════════
+function doRoll(stat, skill) {
+  const d20   = rollD20();
+  const mod   = getStatMod(stat);
+  const prof  = skill ? (parseInt(document.getElementById(skill + '-prof').value) || 0) : 0;
+  const total = d20 + mod + prof;
+  const label = skill
+    ? document.querySelector(`#${skill}-prof`)?.closest('.skill-row')?.querySelector('.skill-name')?.textContent || stat.toUpperCase()
+    : stat.toUpperCase();
+  showToast(d20, total, label);
+}
+
+// ══════════════════════════════════════════
+// INITIATIVE — base = DEF mod (DEX substitute)
+// ══════════════════════════════════════════
+let initBonus = 0;
+
+function updateInitDisplay() {
+  const defMod   = getStatMod('def');
+  const total    = defMod + initBonus;
+  const formulaEl = document.getElementById('init-formula');
+  if (formulaEl) formulaEl.textContent = `${total >= 0 ? '+' : ''}${total}`;
+  const bonusEl  = document.getElementById('initBonusDisplay');
+  if (bonusEl) bonusEl.textContent = initBonus === 0 ? '' : (initBonus > 0 ? `+${initBonus}` : `${initBonus}`);
+}
+
+function adjustInitBonus(dir) {
+  initBonus += dir;
+  updateInitDisplay();
+  save();
+}
+
+function updateACDisplay() {
+  const defMod   = getStatMod('def');
+  const override = parseInt(document.getElementById('acVal').value);
+  const derived  = 10 + defMod;
+  const el = document.getElementById('acDerived');
+  if (el) el.textContent = !isNaN(override) ? override : derived;
+}
+
+function doInitRoll() {
+  const defMod = getStatMod('def');
+  const d20    = rollD20();
+  const total  = d20 + defMod + initBonus;
+  showToast(d20, total, 'Initiative');
+}
+
+// ══════════════════════════════════════════
+// HP
+// ══════════════════════════════════════════
+let flashTimer = null;
+
+function adjustHp(dir) {
+  const amt = parseInt(document.getElementById('hpAmount').value) || 1;
+  const cur = document.getElementById('currentHp');
+  const max = parseInt(document.getElementById('maxHp').value) || Infinity;
+  cur.value = dir === 1
+    ? Math.min(max, (parseInt(cur.value) || 0) + amt)
+    : Math.max(0, (parseInt(cur.value) || 0) - amt);
+  const fl = document.getElementById('hpFlash');
+  fl.textContent = (dir === 1 ? '+' : '−') + amt;
+  fl.className   = 'hp-flash ' + (dir === 1 ? 'pos' : 'neg');
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => { fl.textContent = ''; fl.className = 'hp-flash'; }, 1500);
+  save();
+}
+
+function clampHp() {
+  const cur = document.getElementById('currentHp');
+  const max = parseInt(document.getElementById('maxHp').value);
+  if (!isNaN(max) && parseInt(cur.value) > max) cur.value = max;
+}
+
+// ══════════════════════════════════════════
+// IMAGE UPLOAD
+// ══════════════════════════════════════════
+function loadImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    try { localStorage.setItem(SAVE_KEY + '_img', dataUrl); } catch(e) {
+      console.warn('Image too large to save to localStorage');
+    }
+    showImage(dataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showImage(dataUrl) {
+  const preview     = document.getElementById('imgPreview');
+  const placeholder = document.getElementById('imgPlaceholder');
+  const overlay     = document.getElementById('imgOverlay');
+  preview.src = dataUrl;
+  preview.classList.add('loaded');
+  placeholder.style.display = 'none';
+  overlay.style.display     = 'flex';
+}
+
+// ══════════════════════════════════════════
+// INVENTORY
+// ══════════════════════════════════════════
+function addItem(name = '', qty = '') {
+  const d = document.createElement('div');
+  d.className = 'inv-row';
+  d.innerHTML = `<input type="text" placeholder="Item name" value="${name}" oninput="save()"><input type="number" placeholder="1" value="${qty}" style="text-align:center;" oninput="save()"><button class="rm-btn" onclick="this.parentElement.remove(); save()">✕</button>`;
+  document.getElementById('invList').appendChild(d);
+}
+
+// ══════════════════════════════════════════
+// LORE
+// ══════════════════════════════════════════
+function toggleLore() {
+  document.getElementById('loreBody').classList.toggle('open');
+  document.getElementById('loreChevron').classList.toggle('open');
+  save();
+}
+
+// ══════════════════════════════════════════
+// NOTES
+// ══════════════════════════════════════════
+const NOTES_KEY = 'secret_side_notes_v3';
+let docs = [], activeDocId = null, notesOpen = false, docIdCounter = 0, dragSrcIdx = null;
+
+function saveNoteDocs() { try { localStorage.setItem(NOTES_KEY, JSON.stringify({ docs, activeDocId, docIdCounter })); } catch(e) {} }
+function loadNoteDocs() {
+  try { const d = JSON.parse(localStorage.getItem(NOTES_KEY)); if (d) { docs = d.docs || []; activeDocId = d.activeDocId || null; docIdCounter = d.docIdCounter || 0; } } catch(e) {}
+  if (!docs.length) addDoc(true); else renderSidebar();
+  openDoc(activeDocId || docs[0]?.id);
+}
+function toggleNotes() { notesOpen = !notesOpen; document.getElementById('notesPage').classList.toggle('open', notesOpen); }
+function addDoc(silent) {
+  const id = ++docIdCounter;
+  docs.push({ id, title: 'Note ' + (docs.length + 1), content: '' });
+  saveNoteDocs(); renderSidebar();
+  if (!silent) openDoc(id);
+}
+function openDoc(id) {
+  saveCurrentDoc(); activeDocId = id;
+  const doc = docs.find(d => d.id === id); if (!doc) return;
+  document.getElementById('notesEditor').value = doc.content;
+  renderSidebar(); renderTitleBar(doc); saveNoteDocs();
+}
+function saveCurrentDoc() {
+  if (!activeDocId) return;
+  const doc = docs.find(d => d.id === activeDocId);
+  if (doc) doc.content = document.getElementById('notesEditor').value;
+}
+document.getElementById('notesEditor').addEventListener('input', () => { saveCurrentDoc(); saveNoteDocs(); });
+function renderTitleBar(doc) {
+  const wrap = document.getElementById('notesTitleWrap');
+  wrap.innerHTML = `<input class="notes-title-input" id="activeTitleInput" value="${doc.title}" placeholder="Untitled">`;
+  document.getElementById('activeTitleInput').addEventListener('input', e => { doc.title = e.target.value || 'Untitled'; saveNoteDocs(); renderSidebar(); });
+}
+function renderSidebar() {
+  const list = document.getElementById('notesDocList'); list.innerHTML = '';
+  docs.forEach((doc, idx) => {
+    const item = document.createElement('div');
+    item.className = 'notes-doc-item' + (doc.id === activeDocId ? ' active' : '');
+    item.draggable = true;
+    item.innerHTML = `<span class="notes-doc-name" ondblclick="startRenameDoc(${doc.id},this)">${doc.title}</span><button class="notes-doc-del" onclick="deleteDoc(${doc.id});event.stopPropagation()">✕</button>`;
+    item.addEventListener('click', () => openDoc(doc.id));
+    item.addEventListener('dragstart', e => { dragSrcIdx = idx; e.dataTransfer.effectAllowed = 'move'; setTimeout(() => item.classList.add('dragging'), 0); });
+    item.addEventListener('dragend',   () => item.classList.remove('dragging'));
+    item.addEventListener('dragover',  e => { e.preventDefault(); item.classList.add('drag-over'); });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => { e.preventDefault(); item.classList.remove('drag-over'); if (dragSrcIdx === null || dragSrcIdx === idx) return; const moved = docs.splice(dragSrcIdx,1)[0]; docs.splice(idx,0,moved); dragSrcIdx=null; saveNoteDocs(); renderSidebar(); });
+    list.appendChild(item);
+  });
+}
+function startRenameDoc(id, el) {
+  const doc = docs.find(d => d.id === id); if (!doc) return;
+  const inp = document.createElement('input');
+  inp.className = 'notes-doc-rename-input'; inp.value = doc.title;
+  el.replaceWith(inp); inp.focus(); inp.select();
+  const done = () => { doc.title = inp.value.trim() || doc.title; saveNoteDocs(); renderSidebar(); if (doc.id === activeDocId) renderTitleBar(doc); };
+  inp.addEventListener('blur', done);
+  inp.addEventListener('keydown', e => { if (e.key==='Enter') inp.blur(); e.stopPropagation(); });
+  inp.addEventListener('click', e => e.stopPropagation());
+}
+function deleteDoc(id) {
+  if (docs.length <= 1) { docs[0].title='Note 1'; docs[0].content=''; saveNoteDocs(); renderSidebar(); openDoc(docs[0].id); return; }
+  const idx = docs.findIndex(d => d.id === id); docs.splice(idx,1);
+  if (activeDocId === id) openDoc(docs[Math.max(0,idx-1)].id);
+  saveNoteDocs(); renderSidebar();
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+
+
+// ══════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════
+let actionIdCounter = 0;
+
+// Render a read-only default action row
+// Re-render roll display text on default actions when stats change
+function refreshDefaultActions() {
+  document.querySelectorAll('#defaultActionsList .action-row').forEach(row => {
+    const atk = row.dataset.atk;
+    const dmg = row.dataset.dmg;
+    const spans = row.querySelectorAll('.action-roll-text');
+    let i = 0;
+    if (atk) { if (spans[i]) spans[i].textContent = resolveExprDisplay(atk); i++; }
+    if (dmg) { if (spans[i]) spans[i].textContent = resolveExprDisplay(dmg); }
+  });
+}
+
+function resolveExprDisplay(expr) {
+  if (!expr) return '';
+  const statMap = { STR: 'str', MND: 'mnd', SOL: 'sol', DEF: 'def' };
+  let display = expr;
+  Object.entries(statMap).forEach(([kw, stat]) => {
+    if (expr.toUpperCase().includes(kw)) {
+      const mod = getStatMod(stat);
+      const sign = mod >= 0 ? `+${mod}` : `${mod}`;
+      display = display.replace(new RegExp(kw, 'gi'), sign);
+    }
+  });
+  return display;
+}
+
+function renderDefaultAction(d) {
+  const id  = ++actionIdCounter;
+  const row = document.createElement('div');
+  row.className  = 'action-row default-row';
+  row.dataset.id = id;
+  row.dataset.atk = d.atk || '';
+  row.dataset.dmg = d.dmg || '';
+  const hasAtk = d.atk && d.atk !== '';
+  const hasDmg = d.dmg && d.dmg !== '';
+  const atkDisplay = hasAtk ? resolveExprDisplay(d.atk) : '';
+  const dmgDisplay = hasDmg ? resolveExprDisplay(d.dmg) : '';
+  row.innerHTML = `
+    <div class="action-main">
+      <div class="action-header">
+        <span class="action-name-text">${d.name}</span>
+      </div>
+      <span class="action-flavor">${d.flavor}</span>
+      <span class="action-notes-text">${d.notes}</span>
+    </div>
+    <div class="action-rolls">
+      ${hasAtk ? `<div class="action-roll-wrap">
+        <span class="action-roll-label">Atk</span>
+        <span class="action-roll-text">${atkDisplay}</span>
+        <button class="action-roll-btn" onclick="rollDefaultAction(${id},'atk')">Roll</button>
+      </div>` : ''}
+      ${hasDmg ? `<div class="action-roll-wrap">
+        <span class="action-roll-label">Dmg</span>
+        <span class="action-roll-text">${dmgDisplay}</span>
+        <button class="action-roll-btn" onclick="rollDefaultAction(${id},'dmg')">Roll</button>
+      </div>` : ''}
+    </div>`;
+  document.getElementById('defaultActionsList').appendChild(row);
+}
+
+// Parse a dice expression: "2d6+3", "d20+STR", "d20+0" etc.
+// STR/MND/SOL/DEF keywords resolve to current stat mods.
+function parseDiceExpr(expr) {
+  let str = expr.trim().toUpperCase();
+  const statMap = { STR: 'str', MND: 'mnd', SOL: 'sol', DEF: 'def' };
+  Object.entries(statMap).forEach(([kw, stat]) => {
+    const mod = getStatMod(stat);
+    str = str.replace(new RegExp(kw, 'g'), mod >= 0 ? `+${mod}` : `${mod}`);
+  });
+  const diceRegex = /(\d*)D(\d+)/g;
+  let total = 0, rolls = [], breakdown = [], match, flat = str;
+  while ((match = diceRegex.exec(str)) !== null) {
+    const count = parseInt(match[1]) || 1;
+    const sides = parseInt(match[2]);
+    const these = [];
+    for (let i = 0; i < count; i++) these.push(fairDie(sides));
+    const sum = these.reduce((a,b) => a+b, 0);
+    total += sum; rolls.push(...these);
+    breakdown.push(`${count}d${sides}[${these.join(',')}]`);
+    flat = flat.replace(match[0], '');
+  }
+  flat = flat.replace(/\s/g, '');
+  if (flat && flat !== '+' && flat !== '-') {
+    try { total += Function('"use strict";return (' + flat + ')')(); } catch(e) {}
+  }
+  return { total, breakdown: breakdown.join(' + '), firstRoll: rolls[0] ?? null };
+}
+
+function rollDefaultAction(id, type) {
+  const row  = document.querySelector(`.action-row[data-id='${id}']`);
+  if (!row) return;
+  const name = row.querySelector('.action-name-text').textContent;
+  const expr = type === 'atk' ? row.dataset.atk : row.dataset.dmg;
+  if (!expr) return;
+  const { total, firstRoll } = parseDiceExpr(expr);
+  showToast(firstRoll ?? total, total, `${name} — ${type === 'atk' ? 'Attack' : 'Damage'}`);
+}
+
+// Render an editable custom action row
+function addCustomAction(data = {}) {
+  const id  = ++actionIdCounter;
+  const row = document.createElement('div');
+  row.className  = 'action-row';
+  row.dataset.id = id;
+  row.innerHTML = `
+    <div class="action-main">
+      <div class="action-header">
+        <input class="action-name" type="text" placeholder="Action name" value="${data.name||''}" oninput="saveCustomActions()">
+        <button class="action-rm" onclick="removeCustomAction(${id})">✕</button>
+      </div>
+      <textarea class="action-notes" placeholder="Notes..." oninput="saveCustomActions();autoResize(this)">${data.notes||''}</textarea>
+    </div>
+    <div class="action-rolls">
+      <div class="action-roll-wrap">
+        <span class="action-roll-label">Atk</span>
+        <input class="action-roll-input" type="text" placeholder="d20+STR" value="${data.atk||''}" oninput="saveCustomActions()">
+        <button class="action-roll-btn" onclick="rollCustomAction(${id},'atk')">Roll</button>
+      </div>
+      <div class="action-roll-wrap">
+        <span class="action-roll-label">Dmg</span>
+        <input class="action-roll-input" type="text" placeholder="1d6+2" value="${data.dmg||''}" oninput="saveCustomActions()">
+        <button class="action-roll-btn" onclick="rollCustomAction(${id},'dmg')">Roll</button>
+      </div>
+    </div>`;
+  document.getElementById('actionsList').appendChild(row);
+}
+
+function removeCustomAction(id) {
+  const el = document.querySelector(`.action-row[data-id='${id}']`);
+  if (el) { el.remove(); saveCustomActions(); }
+}
+
+function rollCustomAction(id, type) {
+  const row  = document.querySelector(`.action-row[data-id='${id}']`);
+  if (!row) return;
+  const name   = row.querySelector('.action-name').value || 'Action';
+  const inputs = row.querySelectorAll('.action-roll-input');
+  const expr   = type === 'atk' ? inputs[0].value : inputs[1].value;
+  if (!expr.trim()) return;
+  const { total, firstRoll } = parseDiceExpr(expr);
+  showToast(firstRoll ?? total, total, `${name} — ${type === 'atk' ? 'Attack' : 'Damage'}`);
+}
+
+// Keep old rollAction alias so nothing breaks
+function rollAction(id, type) { rollCustomAction(id, type); }
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function saveCustomActions() {
+  const rows = document.querySelectorAll('#actionsList .action-row');
+  const data = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('.action-roll-input');
+    data.push({
+      name:  row.querySelector('.action-name')?.value || '',
+      notes: row.querySelector('.action-notes')?.value || '',
+      atk:   inputs[0]?.value || '',
+      dmg:   inputs[1]?.value || '',
+    });
+  });
+  try { localStorage.setItem(SAVE_KEY + '_custom_actions', JSON.stringify(data)); } catch(e) {}
+}
+
+// Keep old saveActions alias
+function saveActions() { saveCustomActions(); }
+
+function loadActions() {
+  // Always render hardcoded defaults fresh — never from storage
+  // (defaults defined in defaultActions())
+  defaultActions();
+  // Load custom actions from storage
+  let data;
+  try { data = JSON.parse(localStorage.getItem(SAVE_KEY + '_custom_actions')); } catch(e) {}
+  if (data && data.length) data.forEach(d => addCustomAction(d));
+}
+
+function defaultActions() {
+  // Roll actions first, no-roll actions below — edit to change defaults
+  const DEFAULTS = [
+    {
+        "name": "Unarmed Strike",
+        "atk": "d20+STR",
+        "dmg": "1+STR",
+        "flavor": "Sometimes the best weapon is the one at the end of your arm.",
+        "notes": "Punch, kick, headbutt \u2014 whatever you've got."
+    },
+    {
+        "name": "Grapple",
+        "atk": "d20+STR",
+        "dmg": "",
+        "flavor": "Close enough to feel their heartbeat. Close enough to stop it.",
+        "notes": "Contest: STR vs target Athletics or Acrobatics. Success: target is Grappled (speed 0)."
+    },
+    {
+        "name": "Shove",
+        "atk": "d20+STR",
+        "dmg": "",
+        "flavor": "Gravity is free damage.",
+        "notes": "Contest: STR vs target Athletics or Acrobatics. Success: push 5ft away or knock prone."
+    },
+    {
+        "name": "Hide",
+        "atk": "d20+DEF",
+        "dmg": "",
+        "flavor": "The most dangerous thing in the room is what you can't see.",
+        "notes": "DEF (Evasion) vs passive Perception. Success: you become hidden."
+    },
+    {
+        "name": "Dodge",
+        "atk": "",
+        "dmg": "",
+        "flavor": "The best hit is the one that doesn't land.",
+        "notes": "Until next turn: attacks against you have disadvantage, DEX saves have advantage."
+    },
+    {
+        "name": "Dash",
+        "atk": "",
+        "dmg": "",
+        "flavor": "Sometimes valor looks a lot like running.",
+        "notes": "Double your movement speed this turn."
+    },
+    {
+        "name": "Disengage",
+        "atk": "",
+        "dmg": "",
+        "flavor": "A clean exit is a skill in itself.",
+        "notes": "Your movement doesn't provoke opportunity attacks this turn."
+    },
+    {
+        "name": "Help",
+        "atk": "",
+        "dmg": "",
+        "flavor": "One set of hands is never enough.",
+        "notes": "Give an ally advantage on their next ability check or attack roll against a target you can reach."
+    }
+];
+  DEFAULTS.forEach(d => renderDefaultAction(d));
+}
+
+
+// ── DEATH SAVES ──
+setInterval(function() {
+  var hp  = document.getElementById('currentHp').value;
+  var box = document.getElementById('deathSaves');
+  if (!box) return;
+  if (hp === '0') { box.classList.add('on'); }
+  else            { box.classList.remove('on'); }
+}, 500);
+
+function dsPip(el) { el.classList.toggle('on'); dsSave(); dsCheck(); }
+
+function dsRoll() {
+  var d = rollD20();
+  if (d === 20) { document.getElementById('currentHp').value = 1; dsClear(); showToast(20,20,'Nat 20 — Back on your feet!'); return; }
+  if (d === 1)      { dsFill('f',2); showToast(1, d,'Nat 1 — Two failures!'); }
+  else if (d >= 10) { dsFill('s',1); showToast(d, d,'Death Save — Success'); }
+  else              { dsFill('f',1); showToast(d, d,'Death Save — Failure'); }
+  dsSave(); dsCheck();
+}
+
+function dsFill(type, count) {
+  var pips = document.querySelectorAll('.ds-pip.'+type+':not(.on)');
+  for (var i=0; i<Math.min(count,pips.length); i++) pips[i].classList.add('on');
+}
+function dsClear() { document.querySelectorAll('.ds-pip').forEach(function(p){p.classList.remove('on');}); dsSave(); }
+function dsCheck() {
+  if (document.querySelectorAll('.ds-pip.s.on').length >= 3) showToast(20,20,'Stabilized!');
+  if (document.querySelectorAll('.ds-pip.f.on').length >= 3) showToast(1,1,'You have died.');
+}
+function dsSave() {
+  var s=[0,1,2].map(function(i){return document.getElementById('ds-s-'+i)?.classList.contains('on')?1:0;});
+  var f=[0,1,2].map(function(i){return document.getElementById('ds-f-'+i)?.classList.contains('on')?1:0;});
+  try{localStorage.setItem(SAVE_KEY+'_ds',JSON.stringify({s:s,f:f}));}catch(e){}
+}
+function dsLoad() {
+  var data; try{data=JSON.parse(localStorage.getItem(SAVE_KEY+'_ds'));}catch(e){}
+  if(!data)return;
+  [0,1,2].forEach(function(i){
+    if(data.s[i])document.getElementById('ds-s-'+i)?.classList.add('on');
+    if(data.f[i])document.getElementById('ds-f-'+i)?.classList.add('on');
+  });
+}
+
+
+load();
+loadNoteDocs();
+loadActions();
+dsLoad();
+refreshZeroHidden();
+
+// auto-save + re-hide on any locked-field change
+document.querySelectorAll('.locked-field').forEach(el => {
+  el.addEventListener('change', save);
+  el.addEventListener('input',  save);
+});
+
+// re-hide whenever any prof input changes
+document.querySelectorAll('.prof-val').forEach(el => {
+  el.addEventListener('input', () => { refreshZeroHidden(); save(); });
+});
+// ── ODETTE — WAVE ANIMATION ──
+(function() {
+  const canvas = document.getElementById('waveCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, t = 0;
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const waves = [
+    { color:'rgba(0,180,220,0.5)',  amp:28, freq:0.012, speed:0.018, y:0.72 },
+    { color:'rgba(0,130,180,0.4)',  amp:20, freq:0.018, speed:0.024, y:0.76 },
+    { color:'rgba(0,201,177,0.25)', amp:16, freq:0.015, speed:0.015, y:0.68 },
+    { color:'rgba(224,64,160,0.12)',amp:12, freq:0.025, speed:0.030, y:0.82 },
+  ];
+
+  const bubbles = Array.from({length:25}, () => ({
+    x: Math.random() * 1920, y: Math.random() * 1080,
+    r: Math.random() * 3 + 1,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: -(Math.random() * 0.4 + 0.15),
+    o: Math.random() * 0.35 + 0.1,
+  }));
+
+  function frame() {
+    W = canvas.width; H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    waves.forEach(function(w) {
+      var baseY = H * w.y;
+      ctx.beginPath();
+      ctx.moveTo(0, H);
+      for (var x = 0; x <= W; x++) {
+        ctx.lineTo(x, baseY + Math.sin(x * w.freq + t * w.speed * 60) * w.amp);
+      }
+      ctx.lineTo(W, H);
+      ctx.closePath();
+      ctx.fillStyle = w.color;
+      ctx.fill();
+    });
+    bubbles.forEach(function(b) {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,240,255,' + b.o + ')';
+      ctx.fill();
+      b.x += b.vx; b.y += b.vy;
+      if (b.y < -10) { b.y = H + 10; b.x = Math.random() * W; }
+    });
+    t += 0.016;
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
 </script>
+
+<div id="toastStack"></div>
+
+<button id="diceBtn" onclick="toggleDicePanel()" title="Dice Roller">⬡</button>
+
+<div id="dicePanel">
+  <div class="dice-grid">
+    <div class="dice-die" id="die-d20"  onclick="selectDie('d20',20)">d20<span class="dice-die-count" id="cnt-d20"></span></div>
+    <div class="dice-die" id="die-d12"  onclick="selectDie('d12',12)">d12<span class="dice-die-count" id="cnt-d12"></span></div>
+    <div class="dice-die" id="die-d10"  onclick="selectDie('d10',10)">d10<span class="dice-die-count" id="cnt-d10"></span></div>
+    <div class="dice-die" id="die-d8"   onclick="selectDie('d8',8)">d8<span class="dice-die-count" id="cnt-d8"></span></div>
+    <div class="dice-die" id="die-d6"   onclick="selectDie('d6',6)">d6<span class="dice-die-count" id="cnt-d6"></span></div>
+    <div class="dice-die" id="die-d4"   onclick="selectDie('d4',4)">d4<span class="dice-die-count" id="cnt-d4"></span></div>
+    <div class="dice-die" id="die-d100" onclick="selectDie('d100',100)">d100<span class="dice-die-count" id="cnt-d100"></span></div>
+  </div>
+  <div class="dice-actions">
+    <button class="dice-reset-btn" onclick="resetDice()">Reset</button>
+    <button class="dice-roll-btn" onclick="rollDice()">Roll</button>
+  </div>
+</div>
 </body>
 </html>
