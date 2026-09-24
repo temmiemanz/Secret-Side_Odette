@@ -3265,23 +3265,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (saved) rfSetVol(saved);
 });
 
-// ══════════════════════════════════════════
-// STARTING WEAPON — seeded once on first-ever load
-// ══════════════════════════════════════════
-if (localStorage.getItem(INV_KEY) === null) {
-  invItems.push({
-    id: 'i'+Date.now(), name: 'Halcyon', type: 'Weapon', rarity: 'Uncommon',
-    value: '', weight: '3', qty: 1, stackable: false,
-    desc: "Her umbrella, and secretly her rapier. She's had it as long as she can remember, and still opens it half the time just to hear the click.\n\nWhat nobody else knows: the handle is hollow, threading water down through it and out along every spoke the moment it opens. A secret only the umbrella keeps for her.",
-    notes: '', props: 'Finesse', weaponWt: '', twoHanded: false, equippable: true, usable: false, consumable: false,
-    ac: '', armorType: 'Light', strReq: '', stealthDisadv: false,
-    ammoDamage: '', ammoDmgType: '', effect: '', uses: '',
-    fx: {str:'', mnd:'', sol:'', def:''}, conditions: [], customFields: [],
-    actions: [{ name:'Thrust', damage:'1d6+STR', dmgType:'Piercing', range:'5 ft', notes:'' }]
-  });
-  invSave(); invRender(); invApplyPassives();
-}
-
 // ── ODETTE — WAVE ANIMATION ──
 (function() {
   var canvas = document.getElementById('waveCanvas');
