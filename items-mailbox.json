@@ -49,6 +49,56 @@
       "cmdId": "c17909588500823176-Secret-Side_Odette",
       "type": "setLevel",
       "value": "1"
+    },
+    {
+      "cmdId": "c17909597151628649",
+      "type": "editItem",
+      "matchName": "Halcyon",
+      "item": {
+        "mailId": "m1790959715162421",
+        "name": "Halcyon",
+        "type": "Weapon",
+        "rarity": "Uncommon",
+        "value": "",
+        "weight": "3",
+        "qty": 1,
+        "stackable": false,
+        "desc": "Her umbrella, and secretly her rapier. She's had it as long as she can remember, and still opens it half the time just to hear the click.\n\nWhat nobody else knows: the handle is hollow, threading water down through it and out along every spoke the moment it opens. A secret only the umbrella keeps for her. It can be used to store water as well.",
+        "notes": "",
+        "equippable": true,
+        "usable": false,
+        "consumable": false,
+        "uses": "",
+        "props": "Finesse",
+        "weaponWt": "Light",
+        "twoHanded": false,
+        "ac": "",
+        "armorType": "Light",
+        "strReq": "",
+        "stealthDisadv": false,
+        "ammoDamage": "",
+        "ammoDmgType": "",
+        "effect": "",
+        "fx": {
+          "str": "",
+          "mnd": "",
+          "sol": "",
+          "def": ""
+        },
+        "conditions": [],
+        "customFields": [],
+        "actions": [
+          {
+            "name": "Thrust",
+            "damage": "1d6+STR",
+            "dmgType": "Piercing",
+            "range": "5 ft",
+            "damage2": "",
+            "dmgType2": "",
+            "notes": ""
+          }
+        ]
+      }
     }
   ]
 }
