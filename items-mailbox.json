@@ -144,6 +144,11 @@
           }
         ]
       }
+    },
+    {
+      "cmdId": "c17911492293873770",
+      "type": "removeItem",
+      "itemName": "Halcyon"
     }
   ]
 }
